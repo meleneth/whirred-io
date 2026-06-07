@@ -37,7 +37,7 @@ const config = defineConfig({
         lineNumbers: true
     },
     mermaid: {
-        theme: 'default'
+        theme: 'dark'
     }
 })
 

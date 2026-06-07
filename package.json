@@ -5,9 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "docs:dev": "vitepress dev docs",
+    "docs:dev": "vitepress dev docs --host 0.0.0.0",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
+    "docs:preview": "vitepress preview docs --host 0.0.0.0",
     "docker:build": "docker build -t whirred-io:latest .",
     "docker:run": "docker run --rm -p 8080:80 whirred-io:latest"
   },
@@ -20,6 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "autoprefixer": "^10.5.0",
+    "debug": "^4.4.3",
     "mermaid": "^11.15.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.19",
