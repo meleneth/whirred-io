@@ -1,0 +1,3 @@
+FROM mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye
+
+WORKDIR /workspaces/whirred-io

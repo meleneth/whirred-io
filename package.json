@@ -1,0 +1,29 @@
+{
+  "name": "whirred-io",
+  "version": "1.0.0",
+  "description": "whirred.io blog powered by VitePress",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "docker:build": "docker build -t whirred-io:latest .",
+    "docker:run": "docker run --rm -p 8080:80 whirred-io:latest"
+  },
+  "keywords": [
+    "vitepress",
+    "tailwind",
+    "blog"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "mermaid": "^11.15.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.19",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17"
+  }
+}
