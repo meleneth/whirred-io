@@ -8,11 +8,14 @@
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
   "postCreateCommand": "npm install",
-  "forwardPorts": [5173],
+  "forwardPorts": [
+    5173
+  ],
   "portsAttributes": {
     "5173": {
       "label": "VitePress dev server",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openPreview",
+      "protocol": "http"
     }
   },
   "customizations": {
@@ -23,5 +26,6 @@
         "bierner.markdown-mermaid"
       ]
     }
-  }
+  },
+  "postStartCommand": ".devcontainer/start-vitepress.sh"
 }
