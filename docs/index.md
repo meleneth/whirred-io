@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Start reading
-      link: /guide/getting-started
+      link: /articles/
 
 features:
   - title: Dark First
@@ -18,6 +18,12 @@ features:
   - title: Highlighted Code
     details: VitePress + Shiki for clean syntax highlighting with line numbers.
 ---
+
+## Article drafts
+
+- [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/distributed-platform-in-10-minutes)
+- [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
+- [Finer Points of Exception Handling](/articles/finer-points-exception-handling)
 
 ## Mermaid preview
 

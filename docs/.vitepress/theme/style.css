@@ -28,3 +28,30 @@ html.dark {
 .vp-doc .mermaid {
     @apply my-8 overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40 p-4;
 }
+
+
+.o11y-stack-selector {
+    @apply my-8 flex flex-col gap-2 rounded-lg border border-white/10 bg-slate-950/60 p-4 shadow-lg shadow-black/10 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.o11y-stack-selector label {
+    @apply text-sm font-semibold text-slate-200;
+}
+
+.o11y-stack-selector select {
+    @apply min-w-48 rounded-md border border-white/15 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm outline-none transition;
+}
+
+.o11y-stack-selector select:focus {
+    @apply border-emerald-400 ring-2 ring-emerald-400/30;
+}
+
+.o11y-stack-panel {
+    @apply scroll-mt-24;
+}
+
+html.o11y-stack-filtered[data-o11y-stack='newrelic'] .o11y-stack-panel:not([data-o11y-stack-panel='newrelic']),
+html.o11y-stack-filtered[data-o11y-stack='datadog'] .o11y-stack-panel:not([data-o11y-stack-panel='datadog']),
+html.o11y-stack-filtered[data-o11y-stack='opentelemetry'] .o11y-stack-panel:not([data-o11y-stack-panel='opentelemetry']) {
+    display: none;
+}
