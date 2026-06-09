@@ -40,6 +40,6 @@ ARRAY_TO_STRING(name_path, ' > ')
 FROM account_hierarchy
 ```
 
-Previous: [Creating a Million Users](/articles/series/IAM-System-Demo/creating-a-million-users)  
+Previous: [Case Study Overview](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)  
 Next: [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
 

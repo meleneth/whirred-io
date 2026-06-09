@@ -1,5 +1,8 @@
 # ActiveResource and the Default Implementation that Astounded Me
 
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
+Section: Developer Affordances
+
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
 
 > Status: skeleton

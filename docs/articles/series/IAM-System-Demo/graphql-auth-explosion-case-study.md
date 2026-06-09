@@ -4,42 +4,46 @@ Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam
 
 > Status: ramblings
 
+LLM Disclaimer:
+LLM's were used in the preperation of this series of articles.  For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
 
 
+# Timeline overview 
 
-1. Bootstrapping the service skeleton
+(LLM extracted from git commits)
 
-2025-07-13 to 2025-07-14
+1. 2025-07-13 to 2025-07-14 - Bootstrapping the service skeleton
+
 Commits: .gitignore, Rails builder Dockerfile, then five Rails services appear: user-service, account-service, authorization-service, organization-service, user-management-service.
 Then the repo fills in the shared plumbing: Docker/db package fixes, RSpec installs, OpenTelemetry integration, GraphQL gems, compose wrappers, env files, commands, system config, and the first models/migrations/scripts.
 Story: this is the “turn an empty repo into a multi-service Rails system” phase.
-2. Make the first end-to-end demo work
 
-2025-07-14 to 2025-07-18
+2. 2025-07-14 to 2025-07-18 - Make the first end-to-end demo work
+
 Commits like User requires Account, Orgs, Accounts, and Users all create, Generate 100k random users, and Add awesome_print... CTE query.
 Then the UI/frontdoor gets wired up, account filtering appears, and the first auth checks go live with User#can().
 Story: the project stops being just scaffolding and becomes a working IAM demo with users, accounts, orgs, and authorization behavior.
-3. Push into async/event-driven scale
 
-2025-07-20 to 2025-07-21
+3. 2025-07-20 to 2025-07-21 - Push into async/event-driven scale
+
 The log switches to SNS/SQS, an eventstream-based user creator, queue workers, and a million-user stress attempt.
 One commit explicitly says the million-user run failed because LocalStack blew up, followed by a switch to goaws and brute-force worker fixes.
 Story: the demo is now being stress-tested as a distributed system, and the infrastructure limits start showing up.
-4. Harden the data model and reduce chatter
 
-2025-07-23 to 2025-08-08
+4. 2025-07-23 to 2025-08-08 - Harden the data model and reduce chatter
+
 README/doc updates land, then the account hierarchy query gets refined, organization filtering and caching appear, grant caching lands, MultiFetchCache is implemented, and the system stops loading users everywhere just to do auth checks.
 There’s also a production config fix for SECRET_KEY_BASE.
 Story: this looks like the “make it less fragile and less chatty” phase, with a lot of attention on query shape, caching, and operational correctness.
-5. Add groups and move the UI onto GraphQL
 
-2025-08-13 to 2025-08-21
+5. 2025-08-13 to 2025-08-21 - Add groups and move the UI onto GraphQL
+
 A new group-service shows up, group creation is wired in, and the user-management UI starts integrating users and groups.
 Then the repo moves hard into GraphQL: single-account queries, accountWithParents, group types, organization queries, raw multi-account queries, dataloader refactors, CSRF skipping for GraphQL, and async chunked retrieval.
 Story: the app is expanding its IAM model beyond users/accounts/orgs into groups, while the UI/query layer is being rebuilt around batched GraphQL access.
-6. Final optimization and cleanup
 
-2025-08-28 to 2025-09-02
+6. 2025-08-28 to 2025-09-02 - Final optimization and cleanup
+
 This is the tuning phase: UUID array bind params, tracer fixes, an attempted “real async” pass, a primary-key correction and revert, POST span reshaping, and finally aggregated counts for accounts, users, and groups.
 Story: once the shape of the system is in place, the remaining work is about performance, tracing, and getting the query surfaces into a better final form.
 
@@ -71,7 +75,7 @@ We use ActiveResource heavily in this implementation, to make remote objects fee
 
 So here we are at needing Authorization support. we should not be able to load Accounts, Organizations, Users, or Groups without having scoped permission to access that bit of data.
 
-We're going to work on getting the permissions to exist at all, then we'll add impersonation support so we can load pages 'as' a user, then see timings with all the authz checks in place.
+We're going to work on getting the permissions to exist at all, then see timings with all the authz checks in place.
 
 ```mermaid
 flowchart LR
@@ -328,7 +332,6 @@ The important distinction is that Organization Service can locally answer, "whic
 
 ## Parts
 
-0. [Creating a Million Users](/articles/series/IAM-System-Demo/creating-a-million-users)
 1. [CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
 2. [Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
 3. [Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
@@ -339,41 +342,9 @@ The important distinction is that Organization Service can locally answer, "whic
 8. [Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
 
 
-This case study follows from [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/distributed-platform-in-10-minutes), where the platform shape came together quickly enough that authorization complexity became visible almost immediately.
+This case study sits alongside the [Developer Affordances](/articles/#developer-affordances) notes, where the scaffold, ActiveResource layer, data generation, devcontainer, and Foreman setup explain how the demo became possible to build and inspect.
 
-## Thesis
-
-GraphQL authorization failures rarely arrive as one obvious bug. They multiply across resolvers, graph edges, generated clients, role checks, cache behavior, and partial data semantics until the system has more policy surfaces than anyone intended.
-
-## Outline
-
-1. The starting architecture inherited from the scaffold.
-2. The first auth model: roles, tenants, ownership, and resolver-level checks.
-3. Where the model exploded: nested fields, batching, federation boundaries, and cached responses.
-4. The bug class: data that was individually protected but relationally exposed.
-5. The remediation: central policy evaluation, deny-by-default field access, and test fixtures.
-6. Lessons for future scaffolds.
-
-## Notes To Fill In
-
-- Add a concrete schema fragment showing the problematic graph edge.
-- Include one failing authorization test before the fix.
-- Compare resolver-local auth with centralized policy checks.
-- Capture how auth decisions should appear in logs and traces.
-
-## Diagram Placeholder
-
-```mermaid
-flowchart TD
-  User[User Request] --> Resolver[GraphQL Resolver]
-  Resolver --> Policy[Policy Check]
-  Resolver --> Loader[DataLoader]
-  Loader --> DB[(Database)]
-  Policy --> Allow{Allowed?}
-  Allow -->|yes| Response[Partial Response]
-  Allow -->|no| Redaction[Null / Error / Redacted Field]
-```
 
 ## Related
 
-- [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/distributed-platform-in-10-minutes)
+- [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/dev-affordances-distributed-platform-in-10-minutes)

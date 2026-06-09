@@ -11,30 +11,30 @@ hero:
       link: /articles/
 
 features:
-  - title: Dark First
-    details: Theme defaults to dark mode while preserving appearance controls.
-  - title: Mermaid Ready
-    details: Use mermaid fenced blocks to turn docs into living diagrams.
-  - title: Highlighted Code
-    details: VitePress + Shiki for clean syntax highlighting with line numbers.
+  - title: Case Studies
+    details: Deep dives into systems as they get built, stressed, and reshaped.
+  - title: Developer Affordances
+    details: Notes on the tools and patterns that make distributed work tractable.
+  - title: Engineering Essays
+    details: Standalone arguments about code, operations, and maintainability.
 ---
 
-## Article drafts
+## Start Here
 
-- [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/distributed-platform-in-10-minutes)
-- [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
+- [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
+- [Developer Affordances](/articles/#developer-affordances)
 - [Finer Points of Exception Handling](/articles/finer-points-exception-handling)
 
-## Mermaid preview
+## Diagram Preview
 
 ```mermaid
 flowchart LR
-  A[Draft Post] --> B[Review]
-  B --> C[Publish]
-  C --> D[Share]
+  Problem[Case Study] --> Affordances[Developer Affordances]
+  Problem --> Essays[Engineering Essays]
+  Affordances --> BetterWork[Better Local Workflows]
 ```
 
-## Code highlighting preview
+## Code Highlighting Preview
 
 ```ts
 export function publishPost(title: string): string {

@@ -1,10 +1,33 @@
 # How I Scaffolded an Entire Distributed Platform in 10 Minutes
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
+> Status: Draft
 
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
+Section: Developer Affordances
 
 tl;dr: first, I spent A Long Time writing a scaffolding tool
 
+In order to explore graphql and service oriented architecture at scale, I needed a playground.
+
+Being able to run your entire setup in different environments forces you to be honest about a bunch of details and I had written the [Mobilis](https://github.com/meleneth/mobilis) project to scaffold service based architectures, so step one was using that to generate the layout.
+
+I used the script at the end to do it.  
+
+Mistakes were made.  Localstack instead of goaws, only having Redis for the authorization service, no Groups service are front of mind when thinking about them.  It did, however prove a fertile lab to find out where the holes in my understanding were.
+
+[initial generated codebase](https://github.com/meleneth/iam-system-demo/tree/134a9a2e956438289680b489d9d047cd9988859a)
+
+So we got to skip-start to being able to blast code in, with a bunch of rails services, a deployment machinism via docker compose, and being able to run all environments at the same time due to non-conflicting ports throughout.
+
+A very useful detail of this abstraction is the dc_dev, dc_test, and dc_prod scripts that get generated.  They bundle up the long list of docker compose flags needed to use the system in different environments, and let you treat it as if it was a simple compose.yml
+
+The complexity is needed because maintaining multiple environments worth of configs can be a very large pain.  The generated system has mutiple top level entry points for compose, and is built out of per-service includes in the top level *-compose.yml files.  We also have all the needed evironment variables in test.env, development.env, and production.env.
+
+The trickies part is the per-env overrides.
+
+we have *-overrides.yml files at the top level.  This was needed because in production, rails defaults to needing a full 4 different DB's not just one.
+
+We probably didn't need all the other databases - I'm pretty sure we only really used the dev env - but not needing it this time didn't really matter when the support came free on the thing I really wanted anyways - one command scaffold of my entire environment so I could start hacking
 
 ```ruby
 #!/usr/bin/env ruby
