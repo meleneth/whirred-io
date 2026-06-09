@@ -50,8 +50,3 @@ html.dark {
     @apply scroll-mt-24;
 }
 
-html.o11y-stack-filtered[data-o11y-stack='newrelic'] .o11y-stack-panel:not([data-o11y-stack-panel='newrelic']),
-html.o11y-stack-filtered[data-o11y-stack='datadog'] .o11y-stack-panel:not([data-o11y-stack-panel='datadog']),
-html.o11y-stack-filtered[data-o11y-stack='opentelemetry'] .o11y-stack-panel:not([data-o11y-stack-panel='opentelemetry']) {
-    display: none;
-}

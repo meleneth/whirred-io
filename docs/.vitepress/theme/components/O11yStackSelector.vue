@@ -1,34 +1,36 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
-
-type Stack = 'newrelic' | 'datadog' | 'opentelemetry'
+import { computed, onMounted, watch } from 'vue'
+import { o11yStackState, setO11yStack, type O11yStack } from './o11yStack'
 
 const STORAGE_KEY = 'whirred-o11y-stack'
-const stacks: Array<{ value: Stack; label: string }> = [
+const stacks: Array<{ value: O11yStack; label: string }> = [
   { value: 'newrelic', label: 'New Relic' },
   { value: 'datadog', label: 'Datadog' },
   { value: 'opentelemetry', label: 'OpenTelemetry' }
 ]
 
-const activeStack = ref<Stack>('newrelic')
+const activeStack = computed({
+  get: () => o11yStackState.activeStack,
+  set: (stack: O11yStack) => setO11yStack(stack)
+})
 
-function applyStack(stack: Stack) {
-  document.documentElement.dataset.o11yStack = stack
-  document.documentElement.classList.add('o11y-stack-filtered')
+function isStack(value: string | null): value is O11yStack {
+  return stacks.some((stack) => stack.value === value)
 }
 
 onMounted(() => {
-  const saved = window.localStorage.getItem(STORAGE_KEY) as Stack | null
-  if (saved && stacks.some((stack) => stack.value === saved)) {
-    activeStack.value = saved
+  const saved = window.localStorage.getItem(STORAGE_KEY)
+  if (isStack(saved)) {
+    setO11yStack(saved)
   }
 
-  applyStack(activeStack.value)
+  o11yStackState.hydrated = true
 })
 
 watch(activeStack, (stack) => {
-  window.localStorage.setItem(STORAGE_KEY, stack)
-  applyStack(stack)
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, stack)
+  }
 })
 </script>
 

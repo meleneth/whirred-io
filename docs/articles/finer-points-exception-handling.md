@@ -8,9 +8,11 @@
 
 Exception handling got extra tricky in the age of observability.
 
-The problem is not observability inside rescue blocks. Reporting handled errors is good. If your code catches an exception and makes a decision about it, production should still have a record of what happened.
+Reporting an exception is fine. Reporting it and then continuing as if the failed operation succeeded is the bug.
 
-The dangerous pattern is reporting the exception and then continuing without an explicit control-flow decision. The wreckage comes from letting a failed operation impersonate a successful one. Once that happens, every downstream caller has to make decisions from a lie.
+The worst part is not only production correctness. It is developer experience. In production, an error-reporting agent may at least leave a breadcrumb. In development and test, that breadcrumb is often disabled, stubbed, ignored, or not configured. Then the exception is simply swallowed. The original stack trace is gone, and the test fails later with no obvious connection to the operation that actually broke.
+
+That turns a normal exception into a debugging seance.
 
 <O11yStackSelector />
 
@@ -28,9 +30,7 @@ end
 continue_the_workflow!
 ```
 
-That code looks responsible because it tells New Relic something went wrong. But it also deletes the most important signal the exception carried: this operation failed.
-
-`notice_error()` is reporting, not handling. And if the only plan was to call `notice_error()` and re-raise, the rescue probably did not need to exist at all. In a Rails-style request path, an unhandled exception will usually reach the controller/framework boundary where the New Relic agent can notice it automatically.
+`notice_error()` is reporting, not handling. If it is disabled in test, this rescue block deletes the exception entirely.
 
 </StackPanel>
 
@@ -48,9 +48,7 @@ end
 continue_the_workflow!
 ```
 
-That code looks responsible because it records the exception on the current span. But it also deletes the most important signal the exception carried: this operation failed.
-
-`record_exception()` and span error status are reporting, not handling. And if the only plan was to record the exception and re-raise, the rescue probably did not need to exist at all. In a traced request path, letting the exception escape to the controller/framework boundary is often what lets instrumentation mark the failing operation naturally.
+`record_exception()` and span error status are reporting, not handling. If tracing is disabled in test, this rescue block deletes the exception entirely.
 
 </StackPanel>
 
@@ -66,17 +64,11 @@ end
 continue_the_workflow!
 ```
 
-That code looks responsible because it marks the active Datadog span as errored. But it also deletes the most important signal the exception carried: this operation failed.
-
-`set_error()` is reporting, not handling. And if the only plan was to call `set_error()` and re-raise, the rescue probably did not need to exist at all. In a traced request path, letting the exception escape to the controller/framework boundary is often what lets Datadog mark the failing operation naturally.
+`set_error()` is reporting, not handling. If tracing is disabled in test, this rescue block deletes the exception entirely.
 
 </StackPanel>
 
-Observability APIs are side effects. They are not policy decisions.
-
-If a rescue block records telemetry and then silently falls through, it creates the illusion that the exception was handled while letting the program continue through a state the exception was trying to stop. That is exception laundering. It has killed real codebases because the dashboard becomes a graveyard for missing control flow.
-
-A rescue block should not end after telemetry unless the code has actually recovered. After reporting, the code still needs to choose: `raise`, `retry`, return an explicit fallback, mark the job failed, enqueue a retry, render an error response, or translate the failure into a domain result. The key point is that a choice gets made about control flow, and that choice echoes through the codebase.
+A rescue block should not end after telemetry unless the code has actually recovered. After reporting, choose what happens next: `raise`, `retry`, return an explicit fallback, mark the job failed, enqueue a retry, render an error response, or translate the failure into a domain result.
 
 This article is not anti-New Relic, anti-OpenTelemetry, or anti-Datadog. It is anti report-and-continue.
 
@@ -115,7 +107,7 @@ The dangerous version keeps the reporting and deletes the failure. That is how a
 
 Sometimes re-raising the original exception is exactly right. Most code should do that, or handle the failure explicitly.
 
-A wrapper is not the point. The point is preventing report-and-continue from turning one failure into a trail of corrupted assumptions. A wrapper is useful at boundaries where an error has already been reported and higher layers need a consistent local signal that says: this failed, it was reported, do not report it again.
+A wrapper is not the point. It is useful at boundaries where an error has already been reported and higher layers need a consistent local signal that says: this failed, it was reported, do not report it again.
 
 That boundary pattern can look like this:
 
@@ -170,7 +162,7 @@ expect {
 }.to raise_error(ReportedException, /CRM unavailable/)
 ```
 
-Now a dependency upgrade, API behavior change, or environment drift does not turn into a spooky assertion failure fifteen lines later. The test tells you the operation hit a reported exception and stopped.
+Now a dependency upgrade, API behavior change, or environment drift fails at the operation that broke instead of surfacing as a spooky assertion failure fifteen lines later.
 
 Use this wrapper sparingly. It is an antidote for a specific boundary problem, not the default answer to every rescue block.
 
@@ -556,11 +548,9 @@ Each version reports if reporting is useful. None of them pretend reporting is r
 
 ## Practical guidance
 
-Use observability APIs inside rescue blocks only when the rescue block has a reason to exist: adding context, classifying expected behavior, suppressing duplicate reporting, translating the failure, retrying, scheduling repair work, or returning an explicit domain result. If all the block does is report and re-raise, the better code is often no rescue block at all. Let the exception reach the controller, job, or framework boundary that your observability stack already instruments.
+Use observability APIs inside rescue blocks only when the rescue block has a reason to exist: adding context, classifying expected behavior, suppressing duplicate reporting, translating the failure, retrying, scheduling repair work, or returning an explicit domain result.
 
-When a rescue block does exist, make the observability API a boring wrapper around reporting. The important line should still be the policy decision immediately after reporting.
-
-Do not stand under a failing path and hope the telemetry call makes it safe. Decide whether the path stops, retries, returns a named fallback, schedules repair work, or becomes a domain result.
+If all the block does is report and re-raise, the better code is often no rescue block at all. Let the exception reach the controller, job, or framework boundary that your observability stack already instruments.
 
 A good rescue block should answer three questions:
 
@@ -568,9 +558,7 @@ A good rescue block should answer three questions:
 2. Who was told?
 3. What happens next?
 
-If the answer to the third question is “nothing, we just called `notice_error()`,” the code is probably swallowing a failure.
-
-The dashboard should tell you what happened. Application code still has to decide what happens next.
+If the answer to the third question is “nothing,” the code is probably swallowing a failure. The dashboard should tell you what happened. The test suite should still tell you where it happened.
 
 ## References
 
