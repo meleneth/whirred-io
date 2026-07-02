@@ -26,3 +26,5 @@ The auth explosion is a coordination problem. User Management calls User, Accoun
 Foreman does not make the architecture correct. It makes the running shape legible enough to debug.
 
 Previous: [Devcontainers for Local Distributed Systems](/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems)
+
+Back to: [Developer Affordances](/articles/series/IAM-System-Demo/iam-system-demo#developer-affordances)

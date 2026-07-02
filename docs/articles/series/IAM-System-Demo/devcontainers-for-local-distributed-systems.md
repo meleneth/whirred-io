@@ -25,4 +25,6 @@ When the interesting failure is hidden in request fan-out, cache boundaries, and
 
 A good devcontainer does not solve the distributed system. It makes the system available for inspection.
 
+Previous: [Creating a Million Users](/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users)
+
 Next: [Foreman for Local Process Orchestration](/articles/series/IAM-System-Demo/foreman-for-local-process-orchestration)

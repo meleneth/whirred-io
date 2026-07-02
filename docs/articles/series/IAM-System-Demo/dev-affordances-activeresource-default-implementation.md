@@ -3,9 +3,7 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
-
-> Status: skeleton
+> Status: Draft
 ActiveResource is a library that got removed from Ruby on Rails.
 
 It's supposed to let you access a remote object somewhat like you would a local model.
@@ -111,3 +109,6 @@ def self.user_can(user_id, scope_type, permission, scope_id)
 end
 ```
 
+Previous: [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/dev-affordances-distributed-platform-in-10-minutes)
+
+Next: [Creating a Million Users](/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users)

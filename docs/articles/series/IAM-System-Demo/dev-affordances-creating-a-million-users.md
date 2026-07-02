@@ -3,9 +3,6 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
-Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
-
 > Status: draft
 
 We did not build an async user creation pipeline because product needed it. We built it to see if our distributed retrieval model could take a beating.
@@ -79,4 +76,6 @@ The async user creation project was not a feature. It was a synthetic stress har
 
 LocalStack collapsed. Goaws cruised. Rails workers inside Docker made it easy to spin up as much concurrency as we wanted.
 
-Next: [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
+Previous: [ActiveResource and the Default Implementation that Astounded Me](/articles/series/IAM-System-Demo/dev-affordances-activeresource-default-implementation)
+
+Next: [Devcontainers for Local Distributed Systems](/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems)
