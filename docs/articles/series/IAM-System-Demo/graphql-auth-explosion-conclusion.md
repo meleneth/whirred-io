@@ -39,6 +39,10 @@ The fixes were not magic. They were mostly taste applied under pressure:
 
 That is the part worth carrying forward. Performance work was not separate from design work. The performance failures exposed design mistakes.
 
+> LLM audit: integrated from INCOMING.md. This paragraph summarizes implementation details from the source project.
+
+In the source project, the win came from lining up the layers: GraphQL Dataloader collapsed nested field resolution into batched source calls, Organization Service cached account membership expansion, and Authorization Service turned repeated grant checks into Redis set membership with pipelined lookups. The lesson is not just that caching helped. The lesson is that each layer had to preserve the batching shape for the next layer.
+
 ## And Now LLMs Exist
 
 So here is the uncomfortable question:
@@ -51,5 +55,8 @@ They punish the absence of it.
 
 They turn "we did not understand the system" from a local failure into a throughput problem.
 
+## And, of course
+
+At some level any technical solution to 'the dataset is too large' will fail.  The more important question here might be to find out how to serve massively oversized clients differently than the normal small trivial case, but that's outside the scope of this series, which was aimed at solving the technical problem as much as possible.
 
 Previous: [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)

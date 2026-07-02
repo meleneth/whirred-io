@@ -11,7 +11,7 @@ SQL is not great at hierarchical data structures. Account has parent_account_id 
 
 This CTE fixes that. It does all the work in the database, and returns a flat list of all the accounts in the hierarchy. If we supply the account id's that belong to an organization, this can be done in just that scope. That method is implemented in the codebase, but omitted here.
 
-[Account#account_with_parents CTE](https://github.com/meleneth/iam-system-demo/blob/17caa8b61aac93199f7474e8cdfbb4d2954e3911/account-service/app/controllers/accounts_controller.rb#L13)
+[Account#account_with_parents CTE](https://github.com/meleneth/iam-system-demo/blob/main/account-service/app/controllers/accounts_controller.rb#L13)
 ```sql
 WITH RECURSIVE account_hierarchy(id, level, name, name_path)
 AS (
