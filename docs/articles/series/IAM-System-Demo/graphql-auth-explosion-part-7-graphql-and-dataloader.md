@@ -3,67 +3,210 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: ramblings
+> Status: Codex expansion draft
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles. For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
+> Attribution: Codex generated the expansion in this draft from the current `meleneth/iam-system-demo` source, benchmark documentation, and commit history. This note is intentionally specific so the generated lines remain obvious until they are rewritten.
 
-## GraphQL and Dataloader
+## GraphQL Does Not Remove the Network
 
-Everything up to this point has been directly implementable via REST api. Now we get into systems as they are actually used, where we implement GraphQL.
+GraphQL lets a caller describe the result graph it wants. The execution layer still has to turn that graph into service calls.
 
-GraphQL lets the requestor specify the shape of data they get back, and then handle the exact data they are interested in.
+This query crosses accounts, users, group memberships, and groups:
 
-Dataloader is a bit of advanced wizardy that lets you fetch groups of related objects in one call. This works well with all of our previous layers - multi object fetching by ID, caches, AND async. At this point the only problem left is pagination, which is left to the reader.
+```graphql
+query GetAccounts($ids: [ID!]!, $as: ID!) {
+  accounts(ids: $ids, as: $as) {
+    id
+    name
+    users {
+      id
+      email
+      accountId
+      groups {
+        id
+        name
+      }
+    }
+  }
+}
+```
 
-The dataloader implementation is basically a drop-in on top of our fast rest API's. Our API's are fast because they are able to accept an array of multiple ID's and responses are cached by reasonable keys.
+```json
+{
+  "ids": [
+    "845705e1-d59e-441d-9a66-432b8c211754",
+    "cd56c690-e39e-46c0-bca6-94bde44fb85a"
+  ],
+  "as": "ad6b8ead-f107-40a8-904f-7c203d71bc70"
+}
+```
 
-GraphQL locks this in, by making each type of data query be batched together for multiple retrieval, even if you are requesting multiple keys directly from the GraphQL query level.
+A naive resolver produces this request graph:
 
-For instance, this query
+```text
+for each account:
+  fetch account
+  fetch its users
+  for each user:
+    fetch group memberships
+    for each membership:
+      fetch group
+```
 
-with these variables
+GraphQL has not caused that N+1, but it makes expressing the graph easy enough that the implementation must defend every boundary.
 
-will make very few requests inside the system, for basically any size of data.
+## Dataloader Collects Keys Before Fetching
 
-this is really handwavy in theory, so let's break it down to specifics.
-
-One request to load the Accounts, one request to load the Users, one request to load the Groups, and one request to load the GroupUsers.
-
-## Actual GraphQL Batch Points
-
-> LLM audit: integrated from INCOMING.md. Verify the referenced files against the original IAM demo repo before final publication.
-
-The user-management service exposes the main GraphQL API in [`user-management-service/app/graphql/types/query_type.rb`](https://github.com/meleneth/iam-system-demo/blob/main/user-management-service/app/graphql/types/query_type.rb). The important entry points are:
-
-- `account(id:, as:)`
-- `accounts(ids:, as:)`
-- `organization(id:, as:)`
-
-The `accounts` field is the cleanest example of the desired shape. It uses GraphQL-Ruby Dataloader to collapse many logical account fetches into one source call:
+The `accounts` field hands all requested IDs to one source:
 
 ```ruby
-dataloader.with(Sources::AccountById, as: as, otel_ctx: otel_ctx)
+dataloader
+  .with(Sources::AccountById, as: as, otel_ctx: otel_ctx)
   .load_all(ids)
   .then { |records| records.compact }
 ```
 
-That matters because the nested GraphQL shape is where the old failure mode would reappear. An organization request can ask for accounts, account counts, user counts, and group counts. If each field resolver performs its own remote lookup, GraphQL becomes a very polite N+1 generator.
+Nested fields do the same thing. `AccountType#users` does not immediately call user-service. It registers the account ID with `Sources::UsersByAccountId`. GraphQL-Ruby runs the source after sibling resolvers have registered their keys.
 
-The intended shape is that nested types also use dataloader sources:
+The source then receives the collection of account IDs, partitions it in groups of 200, and sends `POST /users/search` with `account_id: []`. The response is regrouped by account ID and aligned with the original keys.
 
-- [`user-management-service/app/graphql/types/account_type.rb`](https://github.com/meleneth/iam-system-demo/blob/main/user-management-service/app/graphql/types/account_type.rb) loads `users`, `users_count`, and `groups_count` through sources.
-- [`user-management-service/app/graphql/types/organization_type.rb`](https://github.com/meleneth/iam-system-demo/blob/main/user-management-service/app/graphql/types/organization_type.rb) loads `accounts` and `accounts_count` through sources.
+That turns this:
 
-The API works because GraphQL batching lands on REST endpoints that already accept multiple ids, and those downstream services have cache boundaries that match ownership. The GraphQL layer does not magically make the distributed system cheap. It preserves the batching opportunities that the REST and Redis layers already made possible.
+```text
+one users request per account field
+```
 
-## Known Unevenness
+into this:
 
-> LLM audit: integrated from INCOMING.md. Keep this as an audit target for code review because not every source has the same batching quality.
+```text
+one users request per bounded account-ID partition
+```
 
-The performance story is strongest where the code actually uses Dataloader batching, Redis set membership, cached organization expansion, and bounded authorization checks. Some sources are less optimized. For example, [`user-management-service/app/graphql/sources/accounts_with_parents_by_id.rb`](https://github.com/meleneth/iam-system-demo/blob/main/user-management-service/app/graphql/sources/accounts_with_parents_by_id.rb) still iterates per key, so it is not as clean as the chunked `AccountById` source.
+## User Groups Are a Batched Remote Join
 
-That is useful to call out because "we use Dataloader" is not the same as "every resolver is batched correctly." The abstraction gives the system a place to batch. The implementation still has to take the opportunity.
+`UserType#groups` registers user IDs with `Sources::GroupsByUserId`. That source performs two collection phases:
+
+```text
+user IDs
+  -> POST /group_users/search in 200-user chunks
+  -> deduplicate referenced group IDs
+  -> POST /groups/search in 200-group chunks
+  -> rebuild groups-by-user
+```
+
+The composition service is performing a join across service boundaries, but it is joining collections rather than walking rows.
+
+This is the core systems truth of the series:
+
+> Dataloader works when every downstream layer can preserve the collection it discovers.
+
+If `group-service` only exposed `GET /group_users/:id`, Dataloader would have nothing useful to batch into. The REST work in Parts 2 and 3 is what makes the GraphQL layer cheap enough to exist.
+
+## Authorization Follows the Same Collection Shape
+
+Each owning service authorizes the data it returns:
+
+- account-service checks `account.read` over distinct account IDs;
+- user-service checks `account.users.read` over distinct user account IDs;
+- group-service checks `account.users.read` over the accounts owning groups and memberships.
+
+The GraphQL service forwards the real actor through `pad-user-id`. It does not fetch all data as `IAM_SYSTEM` and filter afterward.
+
+The request shape therefore remains batched through policy enforcement:
+
+```text
+Dataloader keys
+  -> service search collection
+  -> distinct owning account scopes
+  -> one batched /can question
+  -> batched parent-chain and grant evaluation
+```
+
+## The MSP Query Makes Pagination Explicit
+
+The current large-fanout query is:
+
+```graphql
+query MspUserManagement(
+  $mspAccountId: ID!,
+  $as: ID!,
+  $continuance: String
+) {
+  mspUserManagement(
+    mspAccountId: $mspAccountId,
+    as: $as,
+    continuance: $continuance
+  ) {
+    loadedCount
+    totalCount
+    continuance
+    accounts {
+      id
+      users {
+        id
+        email
+        accountId
+        groups {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+```
+
+User-management-service first obtains a page of managed account IDs from organization-service. The default is 1,000 IDs. It verifies `msp.admin.users` in the MSP organization context, then lets the normal nested sources hydrate and authorize users and groups for those accounts.
+
+The returned continuance becomes the next GraphQL request. Pagination is not “left to the reader”; it is part of the request contract because the complete graph is too large to be one reliable response unit.
+
+## What the Benchmark Actually Proves
+
+The dense query returns one account, 20,000 users, 40,006 group memberships, eight unique groups, and roughly 5.7 MB of JSON in about 11 seconds in the recorded full benchmark.
+
+The continuation benchmark walked:
+
+| Fixture | Pages | Accounts | Warm time |
+| --- | ---: | ---: | ---: |
+| 10k MSP fanout | 10 | 9,999 | 46.276s |
+| 50k MSP fanout | 50 | 49,999 | 281.135s |
+| 100k MSP fanout | 100 | 99,999 | 686.220s |
+
+The claim is not constant-time GraphQL. The claim is that the pathological graph remains a partitioned collection-retrieval problem rather than degenerating into an HTTP request per returned row.
+
+Once batching removes the accidental work, the remaining cost is honest: payload hydration, authorization over distinct scopes, JSON construction, serialization, and transfer.
+
+## Dataloader Is an Opportunity, Not a Guarantee
+
+The source tree contains useful counterexamples:
+
+- `AccountsWithParentsById` still loops over keys and calls `Account.with_parents` once per key.
+- `AccountHierarchiesResolver` similarly maps IDs through the single-account parent endpoint.
+- `OrganizationType#accounts` chunks account IDs but does its calls directly rather than through a Dataloader source.
+- `AccountById` batches correctly, but its concurrency implementation has to manage mutable ActiveResource headers and tracing context.
+
+Merely inheriting from `GraphQL::Dataloader::Source` does not make a fetch implementation batched. The source must consume its complete key set with collection APIs.
+
+This is also why banning Dataloader because authorization is difficult would have been exactly backward. Authorization had to become collection-shaped regardless. Once it did, Dataloader was the natural mechanism for preserving that shape through GraphQL field resolution.
+
+## The Complete Request Shape
+
+For a page of MSP-managed accounts, the important flow is:
+
+```text
+GraphQL page
+  -> organization-service: managed account-ID page
+  -> authorization-service: MSP organization capability
+  -> user-service: users by account-ID partitions
+       -> authorization-service: account.users.read for distinct scopes
+  -> group-service: memberships by user-ID partitions
+       -> authorization-service: account.users.read for distinct scopes
+  -> group-service: groups by group-ID partitions
+       -> authorization-service: account.users.read for distinct scopes
+  -> GraphQL response + continuance
+```
+
+GraphQL is doing its job here: it gives the caller a useful graph. Dataloader is doing its job: it discovers collections of related keys. The distributed system still has to do the engineering work of honoring those collections all the way down.
 
 Previous: [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)  
 Next: [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
