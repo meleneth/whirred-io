@@ -7,6 +7,10 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 > Attribution: Codex generated the expansion in this draft from the current `meleneth/iam-system-demo` source, benchmark documentation, and commit history. This note is intentionally specific so the generated lines remain obvious until they are rewritten.
 
+::: danger P0 publication blocker
+The current MSP `continuance` implementation is numeric offset pagination mislabeled as continuation, and GraphQL parses the token with `to_i` to calculate progress. This violates the continuation invariant. See the repository-root `PUBLISH_BLOCKERS.md`; do not publish this installment as a successful pagination story until the blocker is closed.
+:::
+
 ## GraphQL Does Not Remove the Network
 
 GraphQL lets a caller describe the result graph it wants. The execution layer still has to turn that graph into service calls.
@@ -158,7 +162,11 @@ query MspUserManagement(
 
 User-management-service first obtains a page of managed account IDs from organization-service. The default is 1,000 IDs. It verifies `msp.admin.users` in the MSP organization context, then lets the normal nested sources hydrate and authorize users and groups for those accounts.
 
-The returned continuance becomes the next GraphQL request. Pagination is not “left to the reader”; it is part of the request contract because the complete graph is too large to be one reliable response unit.
+The returned continuation token should become an opaque input to the next GraphQL request. Pagination is not “left to the reader”; it is part of the request contract because the complete graph is too large to be one reliable response unit.
+
+The implementation currently violates that contract. Organization-service returns a numeric SQL offset, and user-management-service calls `continuance.to_i` when calculating `loaded_count`. That is offset pagination with a continuation-shaped API. The client and GraphQL layer know the token's internal representation, and changes before the current offset can skip or duplicate records.
+
+The correct implementation must use deterministic keyset traversal, keep the token opaque and bound to the MSP query scope, and track loaded progress independently of the cursor. If the walk promises snapshot consistency while relationships mutate, the token must also carry or reference a snapshot/version boundary.
 
 ## What the Benchmark Actually Proves
 
@@ -210,4 +218,3 @@ GraphQL is doing its job here: it gives the caller a useful graph. Dataloader is
 
 Previous: [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)  
 Next: [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
-
