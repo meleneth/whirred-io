@@ -31,6 +31,99 @@ That is the first systems rule in this series:
 
 > A relationship stored in one service's database should be traversed by that service, not rediscovered one network hop at a time by every caller.
 
+## Why the HTTP Walk Multiplies Deployment Size
+
+The parent loop is worse than “several requests are slower than one request.” Under a conventional threaded Rails deployment, the top-level request occupies a Puma thread for its complete lifetime. Once that request has touched a local database, the thread may also retain a checked-out database connection until Rails returns the request and clears the thread's leased connection.
+
+The bad sequence is therefore:
+
+```text
+Puma accepts request and assigns one thread
+  -> service performs a local database lookup
+  -> database connection is leased to that execution context
+  -> service waits for parent HTTP request 1
+  -> service waits for parent HTTP request 2
+  -> service waits for parent HTTP request 3
+  -> ...
+  -> response completes
+Puma thread and leased database connection become reusable
+```
+
+The CPU may be almost idle during the external waits. Capacity is still consumed. The scarce resources are concurrency slots: Puma threads, database connections, HTTP connections, and a request's share of every downstream service.
+
+Little's Law gives the first-order deployment cost:
+
+```text
+in-flight requests = arrival rate x average request time
+```
+
+For a parent walk:
+
+```text
+request time ~= local work + (parent depth x downstream round-trip time)
+```
+
+For example, assume:
+
+- 20 incoming requests per second;
+- 10 sequential parent requests;
+- 50 ms per internal HTTP round trip;
+- 10 ms of other request work;
+- five Puma threads per instance;
+- a 70% target utilization rather than planning for total saturation.
+
+The serial path takes approximately:
+
+```text
+10 ms + (10 x 50 ms) = 510 ms
+```
+
+At 20 requests per second, it requires approximately:
+
+```text
+20 x 0.510 = 10.2 simultaneously occupied request slots
+10.2 / 0.70 = 14.6 provisioned slots
+ceil(14.6 / 5 threads per instance) = 3 Puma instances
+```
+
+If each occupied request context also retains a database connection, the service needs roughly 15 available connections across those instances merely to sustain that illustrative load at the target utilization.
+
+Replace the ten-hop parent walk with one 60 ms owner-service operation and the same model becomes:
+
+```text
+20 x 0.060 = 1.2 simultaneously occupied request slots
+1.2 / 0.70 = 1.7 provisioned slots
+ceil(1.7 / 5 threads per instance) = 1 Puma instance
+```
+
+The CTE has not saved 450 ms only for the person waiting on one response. In this example it has removed two thirds of the required Puma deployment and most of the associated database-pool demand.
+
+The exact result depends on measured latency, pool behavior, thread counts, and arrival distribution. The equation is the important part: serial network latency multiplies directly into the number of occupied server slots.
+
+## Puma Versus Falcon Does Not Change the Query Count
+
+Falcon can suspend a fiber while a scheduler-aware HTTP client waits for I/O, allowing another fiber to make progress without dedicating another operating-system thread to the wait. That can make the server-thread term much cheaper than Puma's thread-per-active-request model.
+
+It does not automatically make the retained database connection cheap.
+
+If a suspended request still owns a checked-out database connection, the approximate database demand remains:
+
+```text
+database connections required ~= arrival rate x time connection remains leased
+```
+
+Falcon produces the large economic win only when all of the relevant conditions hold:
+
+- downstream HTTP is scheduler-aware and actually yields;
+- code does not block the reactor through an incompatible client;
+- database connections are released before long external waits or the pool is sized for suspended fibers;
+- downstream services can accept the increased concurrency;
+- the request has already been batched so concurrency is not amplifying an N+1.
+
+The `real_async` branch is evidence that these conditions cannot be assumed. It added `async-http` and semaphore-based fetching, still ran the Rails application through Puma, and the attempted “real async” implementation was later reverted.
+
+That creates a measurable Puma/Falcon question, but it does not rescue the parent loop. With either server, ten sequential parent calls are still ten downstream requests, ten opportunities for failure, and ten loads imposed on account-service. The CTE removes the work. Falcon can only change how expensively the caller waits for work that remains.
+
 ## Put the Traversal Where the Data Lives
 
 PostgreSQL can walk the self-referential relationship with a recursive CTE. The first version started at one account and recursively followed `parent_account_id` upward:
@@ -165,4 +258,3 @@ The database did not merely make the same loop faster. It removed the network lo
 
 Previous: [Case Study Overview](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)  
 Next: [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
-
