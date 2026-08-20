@@ -7,6 +7,10 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 > Attribution: Codex generated the expansion in this draft from the current `meleneth/iam-system-demo` source. This note is intentionally specific so the generated lines remain obvious until they are rewritten.
 
+::: danger P0 publication blocker
+The current MSP `continuance` implementation is numeric offset pagination mislabeled as continuation. It is invalid and must not be described as a successful design. See the repository-root `PUBLISH_BLOCKERS.md`. Remove this warning only after the implementation, tests, GraphQL progress calculation, benchmarks, and article text use a valid opaque keyset continuation contract.
+:::
+
 ## “Smart” Means Ownership-Shaped
 
 The account hierarchy is a tree, but each account row knows only its immediate parent. Organization membership is stored in a different service. Authorization needs the parent line constrained to the correct organization.
@@ -117,7 +121,11 @@ Organization-service's internal endpoint returns:
 }
 ```
 
-The default internal page size is 1,000 and is tunable through `IAM_DEMO_BATCH_SIZE`. The continuance is an offset cursor in this demo.
+The default internal page size is 1,000 and is tunable through `IAM_DEMO_BATCH_SIZE`.
+
+The current implementation is not a valid continuation implementation: it converts the token to an integer and applies SQL `OFFSET`. That can skip or duplicate records when earlier rows change, grows more expensive on later pages, and leaks positional implementation details through a supposedly opaque token. This is a publication-blocking defect, not an acceptable demo shortcut.
+
+The intended contract is an opaque, scope-bound keyset token identifying the last stable ordering key, plus snapshot/version information if traversal must represent one stable dataset across mutations. The client must pass the token through without parsing it, and progress reporting must not derive counts by converting the token to an integer.
 
 That page is only the first boundary. User-management-service still has to hydrate users and groups for those account IDs through the collection APIs, and those services still authorize the distinct account scopes they return.
 
@@ -134,4 +142,3 @@ The specialized endpoints in this system share four properties:
 
 Previous: [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)  
 Next: [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)
-
