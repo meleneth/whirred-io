@@ -21,7 +21,7 @@ The current user-management service:
 - includes the `async` gem for explicit within-request work;
 - does not include Falcon as the deployed web server.
 
-The commit history also contains an attempt to switch the GraphQL account source to `async-http` and an `Async::Semaphore`. That commit was reverted.
+The historical `real_async` branch adds `async-http` and an `Async::Semaphore` to the GraphQL account source, but still declares Puma as the Rails web server. The corresponding “real async” commit was later reverted on the main line.
 
 This article therefore needs to separate three kinds of concurrency before making a server claim.
 
@@ -91,6 +91,8 @@ The dense query and continuation fanout fixtures are useful because they stress 
 
 Until that comparison is recorded in the repository, Falcon remains an experiment worth running, not an architectural result established by this case study.
 
+The `real_async` branch is nevertheless valuable experimental material: it preserves the scheduler-oriented client attempt and gives the benchmark work a concrete historical implementation to inspect rather than requiring the experiment to be reconstructed from memory.
+
 ## The Result the Repository Does Establish
 
 The source does establish a stronger and more portable conclusion:
@@ -110,4 +112,3 @@ That is a more defensible end to the series than crediting the web server for wo
 
 Previous: [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)  
 Next: [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
-
