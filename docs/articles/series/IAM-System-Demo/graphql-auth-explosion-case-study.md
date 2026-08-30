@@ -1,3 +1,8 @@
+---
+aside: false
+pageClass: iam-case-study-overview
+---
+
 # GraphQL Auth Explosion Case Study: Overview
 
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
@@ -8,49 +13,6 @@ LLM Disclaimer:
 LLM's were used in the preperation of this series of articles.  For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
 
 
-## Timeline Overview
-
-(LLM extracted from git commits)
-
-All dates are 2025
-
-1. 07-13 to 07-14 - Bootstrapping the service skeleton
-
-Commits: .gitignore, Rails builder Dockerfile, then five Rails services appear: user-service, account-service, authorization-service, organization-service, user-management-service.
-Then the repo fills in the shared plumbing: Docker/db package fixes, RSpec installs, OpenTelemetry integration, GraphQL gems, compose wrappers, env files, commands, system config, and the first models/migrations/scripts.
-Story: this is the “turn an empty repo into a multi-service Rails system” phase.
-
-2. 07-14 to 07-18 - Make the first end-to-end demo work
-
-Commits like User requires Account, Orgs, Accounts, and Users all create, Generate 100k random users, and Add awesome_print... CTE query.
-Then the UI/frontdoor gets wired up, account filtering appears, and the first auth checks go live with User#can().
-Story: the project stops being just scaffolding and becomes a working IAM demo with users, accounts, orgs, and authorization behavior.
-
-3. 07-20 to 07-21 - Push into async/event-driven scale
-
-The log switches to SNS/SQS, an eventstream-based user creator, queue workers, and a million-user stress attempt.
-One commit explicitly says the million-user run failed because LocalStack blew up, followed by a switch to goaws and brute-force worker fixes.
-Story: the demo is now being stress-tested as a distributed system, and the infrastructure limits start showing up.
-
-4. 07-23 to 08-08 - Harden the data model and reduce chatter
-
-README/doc updates land, then the account hierarchy query gets refined, organization filtering and caching appear, grant caching lands, MultiFetchCache is implemented, and the system stops loading users everywhere just to do auth checks.
-There’s also a production config fix for SECRET_KEY_BASE.
-Story: this looks like the “make it less fragile and less chatty” phase, with a lot of attention on query shape, caching, and operational correctness.
-
-5. 08-13 to 08-21 - Add groups and move the UI onto GraphQL
-
-A new group-service shows up, group creation is wired in, and the user-management UI starts integrating users and groups.
-Then the repo moves hard into GraphQL: single-account queries, accountWithParents, group types, organization queries, raw multi-account queries, dataloader refactors, CSRF skipping for GraphQL, and async chunked retrieval.
-Story: the app is expanding its IAM model beyond users/accounts/orgs into groups, while the UI/query layer is being rebuilt around batched GraphQL access.
-
-6. 08-28 to 09-02 - Final optimization and cleanup
-
-This is the tuning phase: UUID array bind params, tracer fixes, an attempted “real async” pass, a primary-key correction and revert, POST span reshaping, and finally aggregated counts for accounts, users, and groups.
-Story: once the shape of the system is in place, the remaining work is about performance, tracing, and getting the query surfaces into a better final form.
-
-
-
 ## Meet My Straw Men
 
 This is my distributed authorization system. There may or may not be similarities to authorization systems I have worked with before, details will differ but I wanted to talk about distributed system optimization and this is as good of a reason as any.
@@ -59,11 +21,11 @@ We start with Organization, owned by OrganizationService. Organizations have nam
 
 Account service owns Accounts. Accounts have a name. Accounts also have a parent_account_id. An account without a parent_account_id is a top level account for the Organization.
 
-User service owns Users, which belong to an account, have an email and other details, and have CapabiliyGrants and Groups.
+User service owns Users. A User stores an `account_id`, an email address, and other profile details. The `account_id` refers to an Account owned by Account service; User service does not own the Account record.
 
-Group service owns Groups, and knows which groups belong to which accounts, and which users belong to which groups.
+Group service owns Groups and UserGroup membership records. A Group stores the `account_id` it belongs to, and a UserGroup stores the `user_id` and `group_id` that connect a User to a Group. Group service owns those relationships; User service does not store Groups on the User record.
 
-AuthorizationService owns CapabilityGrant, and has a rest API for checking 'can' requests - i.e. can a specific user access a specific object.
+Authorization service owns CapabilityGrants. A CapabilityGrant identifies a user, a permission, and the scope where the permission was granted. Authorization service exposes the `can` API used to ask whether a user may perform a specific action against a specific scope. User service does not store CapabilityGrants on the User record.
 
 We also have UserManagementService, which the user will send web requests to directly. We also eventually support GraphQL on this service.
 
@@ -75,15 +37,15 @@ To set the stage for our code links, we are taking some shortcuts in the code ba
 
 We use ActiveResource heavily in this implementation, to make remote objects feel like 'just another rails model'.
 
-So here we are at needing Authorization support. we should not be able to load Accounts, Organizations, Users, or Groups without having scoped permission to access that bit of data.
+An account-scoped record cannot be loaded from a service unless the requesting user has an explicit grant on the record's owning account or on an account in that account's direct lineage.
 
-We're going to work on getting the permissions to exist at all, then see timings with all the authz checks in place.
+Direct lineage means one path through the account tree: start with the owning account, follow `parent_account_id` to its parent, and continue until reaching the top-level account. It includes the owning account and its ancestors. It does not include children, sibling branches, cousins, or every other account in the organization. A grant flows down that path from an ancestor to its descendants; it does not flow upward or sideways.
 
 ```mermaid
 flowchart LR
   classDef service fill:#1e293b,stroke:#38bdf8,color:#e0f2fe
   classDef model fill:#064e3b,stroke:#34d399,color:#ecfdf5
-  classDef join fill:#14532d,stroke:#86efac,color:#f0fdf4
+  classDef join fill:#78350f,stroke:#fbbf24,color:#fffbeb
 
   subgraph Services
     UserManagementService[User Management Service]
@@ -150,11 +112,29 @@ That is the important architectural shape. GraphQL can ask for a deeply nested r
 
 The diagram above is the relationship map. This is the same information in a table-shaped format, split two ways: first by which service owns which tables, then by the fields that make the joins and service hops work.
 
-In these diagrams:
+### Diagram Key
 
-- solid arrows are local table relationships inside the same service database
-- dotted arrows are cross-service ID references, where one service stores an id for a table owned somewhere else
-- thick arrows are runtime service calls
+```mermaid
+flowchart LR
+  classDef service fill:#1e293b,stroke:#38bdf8,color:#e0f2fe
+  classDef table fill:#064e3b,stroke:#34d399,color:#ecfdf5
+  classDef join fill:#78350f,stroke:#fbbf24,color:#fffbeb
+  classDef external fill:#312e81,stroke:#a78bfa,color:#ede9fe
+
+  Service[Service]
+  Table[[Owned table]]
+  Join[[Join table]]
+  External[No local domain tables]
+
+  LocalA[[Table]] -->|local relationship| LocalB[[Table]]
+  CrossA[[Table]] -. cross-service ID .-> CrossB[[Table]]
+  Caller[Service] == runtime service call ==> Callee[Service]
+
+  class Service,Caller,Callee service
+  class Table,LocalA,LocalB,CrossA,CrossB table
+  class Join join
+  class External external
+```
 
 ### Tables Per Service
 
@@ -162,7 +142,7 @@ In these diagrams:
 flowchart TB
   classDef service fill:#1e293b,stroke:#38bdf8,color:#e0f2fe
   classDef table fill:#064e3b,stroke:#34d399,color:#ecfdf5
-  classDef join fill:#14532d,stroke:#86efac,color:#f0fdf4
+  classDef join fill:#78350f,stroke:#fbbf24,color:#fffbeb
   classDef external fill:#312e81,stroke:#a78bfa,color:#ede9fe
 
   subgraph UMS[User Management Service]
@@ -319,7 +299,7 @@ Organization Service is the awkward example because it owns the organization-to-
 flowchart LR
   classDef service fill:#1e293b,stroke:#38bdf8,color:#e0f2fe
   classDef table fill:#064e3b,stroke:#34d399,color:#ecfdf5
-  classDef join fill:#14532d,stroke:#86efac,color:#f0fdf4
+  classDef join fill:#78350f,stroke:#fbbf24,color:#fffbeb
 
   Request[Request for organization accounts]
   OrganizationService[Organization Service]
@@ -355,6 +335,7 @@ The important distinction is that Organization Service can locally answer, "whic
 7. [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)
 8. [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
 9. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
+10. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
 
 
 This case study sits alongside the [Developer Affordances](/articles/series/IAM-System-Demo/iam-system-demo#developer-affordances) notes, where the scaffold, ActiveResource layer, data generation, devcontainer, and Foreman setup explain how the demo became possible to build and inspect.

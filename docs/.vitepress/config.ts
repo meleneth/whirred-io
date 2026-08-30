@@ -42,7 +42,8 @@ const config = defineConfig({
                             { text: 'Part 6: Async MADNESS', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness' },
                             { text: 'Part 7: GraphQL and Dataloader', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader' },
                             { text: 'Part 8: Falcon', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon' },
-                            { text: 'Conclusion', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion' }
+                            { text: 'Conclusion', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion' },
+                            { text: 'Project Timeline', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline' }
                         ]
                     },
                     {

@@ -60,3 +60,5 @@ They turn "we did not understand the system" from a local failure into a through
 At some level any technical solution to 'the dataset is too large' will fail.  The more important question here might be to find out how to serve massively oversized clients differently than the normal small trivial case, but that's outside the scope of this series, which was aimed at solving the technical problem as much as possible.
 
 Previous: [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
+
+Next: [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)

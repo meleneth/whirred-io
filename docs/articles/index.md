@@ -17,6 +17,7 @@ The main spine: what went wrong in a distributed IAM-style system, why authoriza
 - [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)
 - [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
 - [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
+- [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
 
 ## Developer Affordances
 

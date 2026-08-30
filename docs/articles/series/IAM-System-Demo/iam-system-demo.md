@@ -27,4 +27,4 @@ These are related to the IAM demo, but they are not numbered parts of the auth-e
 8. [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)
 9. [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
 10. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
-
+11. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
