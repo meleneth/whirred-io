@@ -1,7 +1,3 @@
----
-aside: false
----
-
 # GraphQL Auth Explosion Case Study, Part 1: CTE
 
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  

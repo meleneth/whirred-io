@@ -24,14 +24,15 @@ sequenceDiagram
   participant AS as Account Service
   participant DB as Account Database
 
-  loop Once for every account ID
+  Note over UM,AS: Once for every account ID
+  loop
     UM->>AS: GET /accounts/:id
     AS->>DB: SELECT one account
     DB-->>AS: one account
     AS-->>UM: one account
   end
 
-  Note over UM,AS: N objects become N network round trips
+  Note over UM,AS: N objects become<br/>N network round trips
 ```
 
 ### Multiple Primary Keys in One Request
@@ -48,7 +49,7 @@ sequenceDiagram
   DB-->>AS: account collection
   AS-->>UM: [account1, account2, account3, ...]
 
-  Note over UM,AS: Explicit primary keys cross the service boundary as one collection
+  Note over UM,AS: Explicit primary keys cross the service boundary<br/>as one collection
 ```
 
 ### Multiple Records Through Multiple Join Keys
@@ -65,7 +66,7 @@ sequenceDiagram
   DB-->>US: users joined by account_id
   US-->>UM: [user1, user2, user3, ...]
 
-  Note over UM,US: The caller supplies multiple account_id join keys, not a free-form search
+  Note over UM,US: The caller supplies multiple account_id join keys,<br/>not a free-form search
 ```
 
 Previous: [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)  

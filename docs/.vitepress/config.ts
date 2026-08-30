@@ -18,6 +18,7 @@ const config = defineConfig({
     ],
     themeConfig: {
         siteTitle: 'whirred.io',
+        aside: false,
         nav: [
             { text: 'Home', link: '/' },
             { text: 'Articles', link: '/articles/' },
@@ -80,7 +81,10 @@ const config = defineConfig({
         lineNumbers: true
     },
     mermaid: {
-        theme: 'dark'
+        theme: 'dark',
+        sequence: {
+            noteMargin: 24
+        }
     }
 })
 

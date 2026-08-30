@@ -60,12 +60,20 @@ html.dark {
     height: auto;
 }
 
+/* Mermaid's flowchart node- and edge-label bounds can sit a fraction too high
+ * for lowercase descenders (for example, the "g" in "grant"). Allow the text
+ * to paint through that calculated boundary instead of clipping the glyph. */
+.vp-doc .mermaid .edgeLabel foreignObject,
+.vp-doc .mermaid .node foreignObject {
+    overflow: visible;
+}
+
 /*
- * Keep prose comfortable to read while allowing overview diagrams to use the
+ * Keep prose comfortable to read while allowing diagrams to use the
  * desktop canvas independently of the text measure.
  */
-.iam-case-study-overview .VPDoc:not(.has-aside) .content,
-.iam-case-study-overview .VPDoc:not(.has-aside) .content-container {
+.VPDoc:not(.has-aside) .content,
+.VPDoc:not(.has-aside) .content-container {
     max-width: 48rem;
 }
 
@@ -133,7 +141,7 @@ html.dark {
 }
 
 @media (min-width: 960px) {
-    .iam-case-study-overview .vp-doc .mermaid {
+    .VPDoc:not(.has-aside) .vp-doc .mermaid {
         position: relative;
         left: 50%;
         width: min(80rem, calc(100vw - var(--vp-sidebar-width) - 6rem));
@@ -141,7 +149,7 @@ html.dark {
         transform: translateX(-50%);
     }
 
-    .iam-case-study-overview .vp-doc .mermaid svg {
+    .VPDoc:not(.has-aside) .vp-doc .mermaid svg {
         width: 100% !important;
     }
 }

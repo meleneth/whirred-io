@@ -24,6 +24,15 @@ eventually meet the publication standard.
   source permalinks. Never put a merely plausible endpoint in a diagram.
 - Keep prose readable and direct. Let diagrams use more horizontal space than
   body text.
+- Prepare readers before each diagram: explain the rule, workload, and contrast
+  they are about to see. Do not put essential interpretation after the diagram.
+- Use the same visual language consistently across the series. Grey Mermaid
+  notes are captions or callouts; loop frames mean that the enclosed requests
+  repeat. Put the repetition wording in a note immediately before the loop and
+  use a bare `loop` marker so Mermaid does not add bracketed loop-header text.
+- Add deliberate `<br/>` breaks to long Mermaid notes. Do not rely on Mermaid's
+  inaccurate text-width calculation to keep the grey background around a long
+  single-line caption.
 - Distinguish observed traces, reproduced measurements, architectural inference,
   and historical recollection.
 - Preserve the fact that this is a synthetic reconstruction of a known system
@@ -31,15 +40,21 @@ eventually meet the publication standard.
 
 ## Central Case-Study Thesis
 
-The architecture is optimized for the normal case: one logged-in user operating
-inside one account context. A cached capability list for that account is bounded
-and fast, even if searching it client-side is inelegant.
+Be wildly allergic to N+1 behavior, especially when an object accessor hides a
+cross-network request that performs more hierarchy, database, and authorization
+work behind it.
 
-Organization-wide User Management has fundamentally different cardinality. One
-administrator manages users distributed across many accounts, so object loads,
-account lineage walks, and authorization checks multiply across service
-boundaries. The full reconstruction eventually reproduced the known failure:
-requests took minutes or failed before responding.
+The architecture is optimized for the normal case: one logged-in user operating
+inside one account context. Organization-wide User Management is fundamentally
+different because it loads every user belonging to every account in the
+organization and therefore crosses many authorization contexts at once.
+
+The numbered parts preserve the historical solution order, but must not read as
+a showcase for this specific stack. Every part should identify the
+one-record-at-a-time behavior, explain its multiplier, say which boundary the
+change removes or contains, and name the expensive shape that still remains.
+The full reconstruction eventually reproduced the known failure: requests took
+minutes or failed before responding.
 
 ## Repository Locations
 
@@ -147,12 +162,12 @@ and conclusion navigation.
 
 ## Diagram and Layout Work
 
-- The overview has no right-side outline.
+- Right-side “On this page” outlines are disabled globally for every article.
 - Desktop layout uses the viewport rather than leaving a large centered outer
   gutter.
 - The left navigation occupies the actual left edge.
-- Overview prose is constrained to a readable measure.
-- Overview diagrams break wider than the prose column.
+- Article prose is constrained to a readable measure.
+- Diagrams break wider than the prose column consistently across articles.
 - Dense Mermaid SVGs retain a useful minimum width instead of shrinking until
   labels are unreadable.
 - Clicking any Mermaid diagram opens a full-screen diagram-only lightbox.

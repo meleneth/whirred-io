@@ -1,8 +1,3 @@
----
-aside: false
-pageClass: iam-case-study-overview
----
-
 # GraphQL Auth Explosion Case Study: Overview
 
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
@@ -96,17 +91,72 @@ flowchart LR
   class OrganizationAccounts,UserGroups join
 ```
 
-## Performance Strategy At A Glance
+## Be Wildly Allergic to N+1
 
-> LLM audit: integrated from INCOMING.md. Verify against the original IAM demo code before treating this as final publication text.
+N+1 is not only a database-query problem. In a distributed system, an innocent
+object accessor can hide a network request. That request can trigger its own
+database work, hierarchy traversal, and authorization calls before returning.
+Code that looks like a small loop can therefore multiply work across several
+services.
 
-The actual project this series is based on did not stay fast because any one layer was clever. It stayed fast because the request shape was attacked at several layers at once.
+User Management is where that multiplication becomes unavoidable. The page
+loads every user belonging to every account in an organization. Each user
+belongs to an account, each account may have a chain of parents, and every
+service must verify that the requested records are authorized. One page load
+therefore crosses many account contexts at once.
 
-1. User Management exposed GraphQL fields shaped for batching: `account(id:, as:)`, `accounts(ids:, as:)`, and `organization(id:, as:)`.
-2. Organization Service cached organization-to-account expansion in Redis for a short TTL instead of recomputing the same membership list on every request.
-3. Authorization Service cached per-user grants as Redis sets and checked many scope ids with pipelined membership calls.
+```mermaid
+flowchart LR
+  Page[Load the User Management page]
+  Users[Every user from every account<br/>in the organization]
+  Accounts[Many account contexts]
+  Lineage[Account and parent-account work]
+  Auth[Authorization for loaded records]
+  Explosion[Object count × hierarchy depth<br/>× cross-service calls]
 
-That is the important architectural shape. GraphQL can ask for a deeply nested result, but the implementation has to turn that graph into a few batched service calls, cached organization membership, and cheap authorization checks. If any of those layers falls back to one-record-at-a-time behavior, the whole request becomes expensive again.
+  Page --> Users
+  Users --> Accounts
+  Accounts --> Lineage
+  Lineage --> Auth
+  Auth --> Explosion
+```
+
+The original parent traversal made this especially stark: following
+`account.parent` was a cross-network call, not an in-process association or a
+local database query. Repeating that traversal while loading and authorizing a
+large result is an N+1 visible from space. Once the reconstruction implemented
+authorization for all of those record loads, the request reproduced the known
+failure mode: it took minutes and could not respond before timeout.
+
+The broad advice is simpler than any implementation in the rest of this
+series: treat one-record-at-a-time work inside a collection as a defect until
+you have proved it is bounded. Be even more suspicious when the work crosses a
+service boundary.
+
+## How to Read the Numbered Parts
+
+The numbered parts follow the order in which the problem was actually solved.
+They are not a claim that CTEs, Redis, Dataloader, async requests, or Falcon are
+the point of the exercise. Each was used to remove or contain one multiplier in
+the same request.
+
+The reconstruction was also developed in that order. Some obvious retrieval
+and hierarchy problems had to be fixed before every service had implemented
+the complete authorization behavior. When that authorization was finished, the
+remaining multipliers combined and the intended failure reproduced exactly.
+That history is slightly messy, but it is more useful than pretending the full
+problem appeared fully formed and was solved from a clean plan.
+
+For each part, keep four questions in view:
+
+1. What one-record-at-a-time behavior existed?
+2. What caused it to multiply?
+3. Which boundary did this change remove or contain?
+4. What expensive shape still remained afterward?
+
+The implementation details are evidence. The transferable lesson is to expose
+request cardinality, preserve batching across every layer, and refuse to let
+local-looking code conceal unbounded remote work.
 
 ## Service/Table View
 
@@ -325,6 +375,9 @@ The important distinction is that Organization Service can locally answer, "whic
 
 
 ## Case Study Spine
+
+This is the historical order in which the multipliers were found and removed,
+not a ranked list of technologies or a recommended universal stack.
 
 1. [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
 2. [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)

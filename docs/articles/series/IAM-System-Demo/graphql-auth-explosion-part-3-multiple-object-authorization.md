@@ -15,9 +15,15 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 Object retrieval fans out to Authorization checks. At each service level, an array of objects is being requested, and the entire request should fail if Authorization is missing for any of those objects. In our example system, Authorization is cumulative per parent account - if you have permission to the parent account, you have permission to the child account. The Authorization service supports a 'can' endpoint, to check if a given user has a specific permission for a type of object.
 
-These are individual level grants, not a collection of all the grants a user has. They are cached in redis, and are checkable in a single pipelined redis call.
+These are individual-level grants, not a collection of all the grants a user has.
 
 ### The Single-Context Capability Shape
+
+In a normal, non-User-Management product request, the user operates inside one
+account context. The calling service asks for that user's complete capability
+list for the account, then checks the returned array for the capability it
+needs. Because the request concerns one user and one account, the response is
+bounded:
 
 ```mermaid
 sequenceDiagram
@@ -27,10 +33,17 @@ sequenceDiagram
 
   S->>AZ: GET /capabilities/Account/:account_id<br/>pad-user-id: actor
   AZ-->>S: [account.read, account.users.read, ...]
-  Note over S: Search the returned array for account.users.read
+  Note over S,AZ: Search the returned array<br/>for account.users.read
 ```
 
-That response is bounded when a normal product request operates inside one account context. Organization-wide User Management changes the cardinality:
+#### Organization-Wide User Management
+
+The User Management page loads every user belonging to every account in the
+organization. Unlike a normal request, its result therefore spans the entire
+account tree instead of one account context. The following diagram shows the
+consequence: after loading users across all of those accounts, User Management
+repeats the same capability-list lookup for every account represented by those
+users.
 
 ```mermaid
 sequenceDiagram
@@ -38,15 +51,21 @@ sequenceDiagram
   participant UM as User Management
   participant AZ as Authorization Service
 
-  loop Once for every account represented in the result
+  Note over UM,AZ: Every user from every account<br/>in the organization is being loaded
+  Note over UM,AZ: Once for every account<br/>represented in the result
+  loop
     UM->>AZ: GET /capabilities/Account/:account_id<br/>pad-user-id: admin
     AZ-->>UM: complete capability array for account N
   end
 
-  Note over UM,AZ: One cached single-context lookup becomes a multi-account fan-out
+  Note over UM,AZ: One admin user's capabilities are checked<br/>across every represented account context
 ```
 
 ### Authority Flows Down the Account Tree
+
+For a target account, authorization considers that account and its direct
+ancestor chain. A grant on an ancestor applies downward to its descendants. A
+grant does not flow upward from a child or sideways into a sibling branch:
 
 ```mermaid
 flowchart TB
@@ -63,9 +82,12 @@ flowchart TB
   Left -. does not grant sideways .-> Right
 ```
 
-For a target account, only that account and its direct ancestor chain are relevant. A grant does not flow upward from a child or sideways into a sibling branch.
-
 ### Ask One Question About the Whole Set
+
+The account IDs come from relationship queries, not an arbitrary list supplied
+by the user. Authorization therefore checks the complete query result as an
+invariant: every account must be covered, or the entire request fails. It does
+not silently filter the collection down to whatever happens to pass.
 
 ```mermaid
 sequenceDiagram
@@ -82,8 +104,6 @@ sequenceDiagram
   G-->>AZ: granted scope-ID set
   AZ-->>S: 200 only if A, B, and C are all covered<br/>otherwise 403 for the complete collection
 ```
-
-The account IDs come from relationship queries, not an arbitrary list supplied by the user. The authorization call verifies the complete result as an invariant. It does not silently filter the collection down to whatever happens to pass.
 
 Previous: [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)  
 Next: [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
