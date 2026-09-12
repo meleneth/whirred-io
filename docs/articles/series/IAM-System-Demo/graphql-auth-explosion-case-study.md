@@ -136,7 +136,7 @@ service boundary.
 ## How to Read the Numbered Parts
 
 The numbered parts follow the order in which the problem was actually solved.
-They are not a claim that CTEs, Redis, Dataloader, async requests, or Falcon are
+They are not a claim that CTEs, Redis, or Dataloader are
 the point of the exercise. Each was used to remove or contain one multiplier in
 the same request.
 
@@ -341,37 +341,63 @@ classDiagram
   authorization_service_capability_grants ..> group_service_groups : scope_id when Group
 ```
 
-### Organization Service Hops
+### From Organization Membership to Account Records
 
-Organization Service is the awkward example because it owns the organization-to-account membership table, but it does not own Account rows. A lookup can move through both kinds of relationships:
+Organization Service does not need full Account records to answer which
+accounts belong to an organization. It owns `organization_accounts`, so it can
+answer that question with account IDs.
+
+User Management needs more than those IDs for its composite UI. The
+organization-wide User Management screen labels and filters users by Account
+name, while each User record contains only an `account_id`. Its GraphQL
+`Organization.accounts` field can also return Account fields such as `name` and
+`parent_account_id`. User Management therefore asks Organization Service for
+membership, then uses those IDs to request the current Account records from
+Account Service:
 
 ```mermaid
 flowchart LR
   classDef service fill:#1e293b,stroke:#38bdf8,color:#e0f2fe
   classDef table fill:#064e3b,stroke:#34d399,color:#ecfdf5
   classDef join fill:#78350f,stroke:#fbbf24,color:#fffbeb
+  classDef request fill:#312e81,stroke:#a78bfa,color:#ede9fe
 
-  Request[Request for organization accounts]
+  Request[Load an organization<br/>with its accounts and users]
+  UserManagementService[User Management Service]
+  MembershipRequest["GET /organization_accounts?<br/>organization_id=:id"]
   OrganizationService[Organization Service]
   Organizations[[organizations]]
   OrganizationAccounts[[organization_accounts]]
+  AccountsRequest["GET /accounts?<br/>id[]=..."]
   AccountService[Account Service]
   Accounts[[accounts]]
-  AuthorizationService[Authorization Service]
+  Result[Users labeled with Account names,<br/>plus requested GraphQL Account fields]
 
-  Request == service call ==> OrganizationService
-  OrganizationService == authz call ==> AuthorizationService
+  Request ==> UserManagementService
+  UserManagementService ==> MembershipRequest
+  MembershipRequest ==> OrganizationService
   OrganizationService -->|local read| Organizations
   Organizations -->|local FK: id to organization_id| OrganizationAccounts
-  OrganizationAccounts -. account_id list .-> AccountService
+  OrganizationAccounts -. account ID list .-> UserManagementService
+  UserManagementService ==> AccountsRequest
+  AccountsRequest ==> AccountService
   AccountService -->|local read| Accounts
+  Accounts -. Account records .-> UserManagementService
+  UserManagementService ==> Result
 
-  class OrganizationService,AccountService,AuthorizationService service
+  class UserManagementService,OrganizationService,AccountService service
   class Organizations,Accounts table
   class OrganizationAccounts join
+  class MembershipRequest,AccountsRequest request
 ```
 
-The important distinction is that Organization Service can locally answer, "which account ids are attached to this organization?" It still has to call Account Service when it needs Account records, because `organization_accounts.account_id` is an identifier crossing a service boundary, not a local foreign key into an accounts table.
+The important distinction is that `organization_accounts.account_id` is enough
+to establish membership, but it is not an Account record and it is not a local
+foreign key into an accounts table. The caller that needs Account fields must
+cross the Account Service boundary. In this path, that caller is User
+Management—not Organization Service. Account Service remains the owner and
+source of truth for those fields; User Management is composing records for a
+screen and GraphQL response, not taking ownership of them.
 
 
 ## Case Study Spine
@@ -384,11 +410,10 @@ not a ranked list of technologies or a recommended universal stack.
 3. [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
 4. [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
 5. [Part 5: Smart APIs](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
-6. [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)
-7. [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)
-8. [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
-9. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
-10. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
+6. [Part 6: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader)
+7. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
+8. [Future Explorations](/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations)
+9. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
 
 
 This case study sits alongside the [Developer Affordances](/articles/series/IAM-System-Demo/iam-system-demo#developer-affordances) notes, where the scaffold, ActiveResource layer, data generation, devcontainer, and Foreman setup explain how the demo became possible to build and inspect.
@@ -401,3 +426,8 @@ This case study sits alongside the [Developer Affordances](/articles/series/IAM-
 - [Creating a Million Users](/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users)
 - [Devcontainers for Local Distributed Systems](/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems)
 - [Foreman for Local Process Orchestration](/articles/series/IAM-System-Demo/foreman-for-local-process-orchestration)
+
+
+## Measured Results and Traces
+
+The [September 2026 benchmark summary](./graphql-auth-explosion-results) includes timings, ranges, failures, and measurement limits. The [trace gallery](./graphql-auth-explosion-traces) pairs small examples with a full interactive waterfall for each trace.

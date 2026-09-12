@@ -76,6 +76,4 @@ The async user creation project was not a feature. It was a synthetic stress har
 
 LocalStack collapsed. Goaws cruised. Rails workers inside Docker made it easy to spin up as much concurrency as we wanted.
 
-Previous: [ActiveResource and the Default Implementation that Astounded Me](/articles/series/IAM-System-Demo/dev-affordances-activeresource-default-implementation)
 
-Next: [Devcontainers for Local Distributed Systems](/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems)

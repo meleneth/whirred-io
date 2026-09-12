@@ -89,5 +89,6 @@ The production implementation accepts multiple target accounts, constructs bound
 
 [View the fixed-revision `compute_accounts_with_parents` implementation](https://github.com/meleneth/iam-system-demo/blob/55dec87ecebf97632cfb36f259bf71d4b5e36a21/account-service/app/controllers/accounts_controller.rb#L190-L250)
 
-Previous: [Case Study Overview](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)  
-Next: [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
+## Measured Evidence
+
+Compare the [measured hierarchy results](./graphql-auth-explosion-results#hierarchy-traversal-and-smart-apis) with the [depth-5 parent traversal and CTE traces](./graphql-auth-explosion-traces#follow-parents-or-ask-for-the-hierarchy).

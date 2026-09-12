@@ -33,6 +33,8 @@ eventually meet the publication standard.
 - Add deliberate `<br/>` breaks to long Mermaid notes. Do not rely on Mermaid's
   inaccurate text-width calculation to keep the grey background around a long
   single-line caption.
+- Use the VitePress side-by-side previous/next pager only. Do not add inline
+  `Previous:` or `Next:` links at the bottom of article content.
 - Distinguish observed traces, reproduced measurements, architectural inference,
   and historical recollection.
 - Preserve the fact that this is a synthetic reconstruction of a known system
@@ -65,10 +67,10 @@ minutes or failed before responding.
 
 ## Current Editorial Focus
 
-We rewound from Part 3 to the overview because the overview is the bedrock for
-the complete series. It must explain the system, ownership boundaries,
-authorization lineage, and cardinality mismatch without drowning the reader in
-implementation detail.
+The active editing pass has moved from the rebuilt GraphQL and Dataloader
+teaching sequence to the conclusion. That article is now Part 6 and retains its
+implementation and trace-evidence gate in
+`iam-system-demo/TODO_FOR_ARTICLE.md`.
 
 ### Overview progress
 
@@ -154,6 +156,75 @@ human security audit. Existing tests are encouraging but not sufficient.
 `iam-system-demo/TODO_FOR_ARTICLE.md` contains the semantic audit, test gaps,
 property-test proposal, and completion gate.
 
+### Part 4: Redis Cache, per service
+
+Status: implementation issues addressed; waiting on controlled cache evidence.
+
+The current article distinguishes the two actual cache shapes:
+
+- Organization Service caches organization membership as account-ID lists.
+- Authorization Service caches allowed scope IDs per user and permission.
+
+It also states the ownership rule: each service caches data it owns rather than
+copying remote service objects into its cache. The missing invalidation path is
+not conceptually difficult: mutation emits an event, a worker consumes it and
+force-expires the affected cache entry, and the next read rebuilds from the
+source of truth.
+
+The dead `AccountGrantChecker` path has been removed. The live
+`Capabilities#account_ids_with_permission` path now pipelines multi-account
+cache reads and computed-miss writes, preserves positive and negative entries,
+and falls back to authoritative computation on Redis pipeline failure. The
+remaining gate is the controlled Redis-disabled/cold/warm evidence described in
+`iam-system-demo/TODO_FOR_ARTICLE.md`. Event-driven invalidation remains an
+explicit production requirement and demo non-goal.
+
+### Part 5: Smart APIs
+
+Status: implementation issues addressed; waiting on trace evidence.
+
+The current draft begins with account ancestry and then combines Organization
+Service membership lookup, the Account Service CTE, and both services' caches.
+The next pass must determine the actual “smart API” lesson and keep Part 5 from
+repeating the detailed CTE and cache mechanics already owned by Parts 1 and 4.
+
+Both GraphQL hierarchy paths now use the existing batch API, map results by the
+returned target account rather than positional response order, preserve caller
+ordering and duplicates, propagate headers/context, and truthfully instrument
+one downstream hierarchy request. The remaining gate is preserved before/after
+trace evidence described in `iam-system-demo/TODO_FOR_ARTICLE.md`.
+
+### Part 6: GraphQL and Dataloader
+
+Status: blocked on Dataloader consistency and request-shape audit.
+
+The article currently overstates the implementation as approximately one
+request per object type. `OrganizationType#accounts` manually chunks rather
+than using a source, `OrgAccountsCount` cannot batch more than one organization,
+several count sources accept but do not apply the actor identity, and nested
+Group resolution has two dependent request stages. The article also retains a
+stale warning about the hierarchy source fixed during Part 5.
+
+The source, schema, actor-propagation, chunking, failure-policy, diagram, and
+trace-evidence requirements are recorded under GraphQL and Dataloader in
+`iam-system-demo/TODO_FOR_ARTICLE.md`.
+
+The article now uses the real wide-organization nested query and diagrams four
+distinct ideas: requested object-tree shape, naïve cross-network N+1, actual
+collection-shaped REST stages, and Dataloader collect/fetch/regroup behavior.
+It explicitly shows the dependent GroupUser-to-Group stages and qualifies
+request counts by configured batch size rather than promising one request for
+arbitrary cardinality. Continue reviewing these diagrams and examples before
+returning to the conclusion.
+
+### Removed from the numbered spine
+
+Async Madness and Falcon were removed to keep the already-long series focused
+on cross-network N+1 behavior, batching, authorization, and request cardinality.
+Bounded concurrency remains an implementation detail. Falcon remains valuable
+and historically motivated the Ruby 3 migration, but it is outside this case
+study's argument.
+
 ### Project Timeline
 
 The old overview timeline now lives after the conclusion as its own draft page.
@@ -208,11 +279,13 @@ unless explicitly requested.
 
 ## Resume Here
 
-1. Open the overview in the browser and review from “Meet My Straw Men” through
-   “Service/Table View.”
-2. Decide which detailed diagrams stay in the overview and which move to a
-   supporting page.
-3. Build the concise normal-request versus User-Management cardinality diagram.
-4. Finish the overview's narrative spine before returning to Part 3.
-5. When returning to Part 3, do not endorse the current set-based algorithm until
-   the audit in `TODO_FOR_ARTICLE.md` is complete.
+1. Continue reviewing the conclusion for the author's voice and the portable
+   cross-network N+1 lesson.
+2. Keep direct claims and avoid formulaic “the problem was not X, it was Y”
+   framing.
+3. Let the technical record demonstrate the author's ability; avoid
+   self-congratulatory explanation.
+4. Revisit Part 6 diagrams visually in the browser before publication because
+   the VitePress build does not validate Mermaid parsing.
+5. Add measured evidence to blocked parts only after their demo completion gates
+   are satisfied.

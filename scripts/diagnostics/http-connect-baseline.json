@@ -1,0 +1,4512 @@
+{
+  "metadata": {
+    "started_at": "2026-09-11T23:30:16Z",
+    "ruby": "ruby 4.0.6 (2026-07-14 revision 03b6d3f889) +PRISM [x86_64-linux]",
+    "net_http": "0.6.0",
+    "container_hostname": "da56493931c7",
+    "url": "http://account-service/up",
+    "tracing": false,
+    "proxy_from_env": true,
+    "proxy_active": false,
+    "proxy_environment_keys": [],
+    "timeout_seconds": 2,
+    "sample_deadline_seconds": 5,
+    "max_retries": 0,
+    "p95_method": "nearest rank; successful samples only",
+    "resolved_ip": "172.21.0.35"
+  },
+  "cases": {
+    "tcp_hostname": {
+      "summary": {
+        "samples": 100,
+        "successes": 100,
+        "failures": 0,
+        "first": {
+          "ok": true,
+          "ms": 8.066259004408494
+        },
+        "median_ms": 3.609980492910836,
+        "p95_ms": 15.818205996765755,
+        "max_ms": 30.18450000672601,
+        "over_10_ms": 12,
+        "connect_attempts": 0,
+        "socket_opens": 0
+      },
+      "session_setup": null,
+      "samples": [
+        {
+          "ok": true,
+          "ms": 8.066259004408494,
+          "socket_open_ms": 8.066259004408494,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 1
+        },
+        {
+          "ok": true,
+          "ms": 3.7566390092251822,
+          "socket_open_ms": 3.7566390092251822,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 2
+        },
+        {
+          "ok": true,
+          "ms": 22.88135400158353,
+          "socket_open_ms": 22.88135400158353,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 3
+        },
+        {
+          "ok": true,
+          "ms": 4.8978489940054715,
+          "socket_open_ms": 4.8978489940054715,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 4
+        },
+        {
+          "ok": true,
+          "ms": 10.336042003473267,
+          "socket_open_ms": 10.336042003473267,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 5
+        },
+        {
+          "ok": true,
+          "ms": 13.169732003007084,
+          "socket_open_ms": 13.169732003007084,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 6
+        },
+        {
+          "ok": true,
+          "ms": 4.287154006306082,
+          "socket_open_ms": 4.287154006306082,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 7
+        },
+        {
+          "ok": true,
+          "ms": 5.957134999334812,
+          "socket_open_ms": 5.957134999334812,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 8
+        },
+        {
+          "ok": true,
+          "ms": 2.879345993278548,
+          "socket_open_ms": 2.879345993278548,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 9
+        },
+        {
+          "ok": true,
+          "ms": 10.490180007764138,
+          "socket_open_ms": 10.490180007764138,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 10
+        },
+        {
+          "ok": true,
+          "ms": 2.973442999063991,
+          "socket_open_ms": 2.973442999063991,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 11
+        },
+        {
+          "ok": true,
+          "ms": 16.69673199648969,
+          "socket_open_ms": 16.69673199648969,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 12
+        },
+        {
+          "ok": true,
+          "ms": 30.18450000672601,
+          "socket_open_ms": 30.18450000672601,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 13
+        },
+        {
+          "ok": true,
+          "ms": 5.132669000886381,
+          "socket_open_ms": 5.132669000886381,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 14
+        },
+        {
+          "ok": true,
+          "ms": 3.3722299995133653,
+          "socket_open_ms": 3.3722299995133653,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 15
+        },
+        {
+          "ok": true,
+          "ms": 5.009749991586432,
+          "socket_open_ms": 5.009749991586432,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 16
+        },
+        {
+          "ok": true,
+          "ms": 18.422066001221538,
+          "socket_open_ms": 18.422066001221538,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 17
+        },
+        {
+          "ok": true,
+          "ms": 3.2093440095195547,
+          "socket_open_ms": 3.2093440095195547,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 18
+        },
+        {
+          "ok": true,
+          "ms": 7.304940998437814,
+          "socket_open_ms": 7.304940998437814,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 19
+        },
+        {
+          "ok": true,
+          "ms": 7.113529994967394,
+          "socket_open_ms": 7.113529994967394,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 20
+        },
+        {
+          "ok": true,
+          "ms": 3.2405030069639906,
+          "socket_open_ms": 3.2405030069639906,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 21
+        },
+        {
+          "ok": true,
+          "ms": 2.617606005514972,
+          "socket_open_ms": 2.617606005514972,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 22
+        },
+        {
+          "ok": true,
+          "ms": 4.568311996990815,
+          "socket_open_ms": 4.568311996990815,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 23
+        },
+        {
+          "ok": true,
+          "ms": 2.817389991832897,
+          "socket_open_ms": 2.817389991832897,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 24
+        },
+        {
+          "ok": true,
+          "ms": 3.7971069978084415,
+          "socket_open_ms": 3.7971069978084415,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 25
+        },
+        {
+          "ok": true,
+          "ms": 2.3499850067310035,
+          "socket_open_ms": 2.3499850067310035,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 26
+        },
+        {
+          "ok": true,
+          "ms": 2.111167006660253,
+          "socket_open_ms": 2.111167006660253,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 27
+        },
+        {
+          "ok": true,
+          "ms": 1.6818330041132867,
+          "socket_open_ms": 1.6818330041132867,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 28
+        },
+        {
+          "ok": true,
+          "ms": 1.8121049943147227,
+          "socket_open_ms": 1.8121049943147227,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 29
+        },
+        {
+          "ok": true,
+          "ms": 1.6470659902552143,
+          "socket_open_ms": 1.6470659902552143,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 30
+        },
+        {
+          "ok": true,
+          "ms": 2.578632003860548,
+          "socket_open_ms": 2.578632003860548,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 31
+        },
+        {
+          "ok": true,
+          "ms": 5.239931007963605,
+          "socket_open_ms": 5.239931007963605,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 32
+        },
+        {
+          "ok": true,
+          "ms": 3.9782159874448553,
+          "socket_open_ms": 3.9782159874448553,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 33
+        },
+        {
+          "ok": true,
+          "ms": 2.626651999889873,
+          "socket_open_ms": 2.626651999889873,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 34
+        },
+        {
+          "ok": true,
+          "ms": 2.690512003027834,
+          "socket_open_ms": 2.690512003027834,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 35
+        },
+        {
+          "ok": true,
+          "ms": 7.537676996435039,
+          "socket_open_ms": 7.537676996435039,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 36
+        },
+        {
+          "ok": true,
+          "ms": 3.1861400057096034,
+          "socket_open_ms": 3.1861400057096034,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 37
+        },
+        {
+          "ok": true,
+          "ms": 2.2733709920430556,
+          "socket_open_ms": 2.2733709920430556,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 38
+        },
+        {
+          "ok": true,
+          "ms": 3.7015269917901605,
+          "socket_open_ms": 3.7015269917901605,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 39
+        },
+        {
+          "ok": true,
+          "ms": 3.5184339940315112,
+          "socket_open_ms": 3.5184339940315112,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 40
+        },
+        {
+          "ok": true,
+          "ms": 4.517085006227717,
+          "socket_open_ms": 4.517085006227717,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 41
+        },
+        {
+          "ok": true,
+          "ms": 1.7375760071445256,
+          "socket_open_ms": 1.7375760071445256,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 42
+        },
+        {
+          "ok": true,
+          "ms": 3.056870002183132,
+          "socket_open_ms": 3.056870002183132,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 43
+        },
+        {
+          "ok": true,
+          "ms": 3.161946006002836,
+          "socket_open_ms": 3.161946006002836,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 44
+        },
+        {
+          "ok": true,
+          "ms": 5.741671004216187,
+          "socket_open_ms": 5.741671004216187,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 45
+        },
+        {
+          "ok": true,
+          "ms": 3.42506798915565,
+          "socket_open_ms": 3.42506798915565,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 46
+        },
+        {
+          "ok": true,
+          "ms": 3.467378002824262,
+          "socket_open_ms": 3.467378002824262,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 47
+        },
+        {
+          "ok": true,
+          "ms": 18.443316002958454,
+          "socket_open_ms": 18.443316002958454,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 48
+        },
+        {
+          "ok": true,
+          "ms": 4.862833986408077,
+          "socket_open_ms": 4.862833986408077,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 49
+        },
+        {
+          "ok": true,
+          "ms": 4.2825359996641055,
+          "socket_open_ms": 4.2825359996641055,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 50
+        },
+        {
+          "ok": true,
+          "ms": 14.910182988387533,
+          "socket_open_ms": 14.910182988387533,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 51
+        },
+        {
+          "ok": true,
+          "ms": 10.267992998706177,
+          "socket_open_ms": 10.267992998706177,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 52
+        },
+        {
+          "ok": true,
+          "ms": 5.755537000368349,
+          "socket_open_ms": 5.755537000368349,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 53
+        },
+        {
+          "ok": true,
+          "ms": 7.638957002200186,
+          "socket_open_ms": 7.638957002200186,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 54
+        },
+        {
+          "ok": true,
+          "ms": 6.023157999152318,
+          "socket_open_ms": 6.023157999152318,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 55
+        },
+        {
+          "ok": true,
+          "ms": 2.9554600041592494,
+          "socket_open_ms": 2.9554600041592494,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 56
+        },
+        {
+          "ok": true,
+          "ms": 2.4037550028879195,
+          "socket_open_ms": 2.4037550028879195,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 57
+        },
+        {
+          "ok": true,
+          "ms": 5.308128005708568,
+          "socket_open_ms": 5.308128005708568,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 58
+        },
+        {
+          "ok": true,
+          "ms": 2.657450007973239,
+          "socket_open_ms": 2.657450007973239,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 59
+        },
+        {
+          "ok": true,
+          "ms": 5.177953993552364,
+          "socket_open_ms": 5.177953993552364,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 60
+        },
+        {
+          "ok": true,
+          "ms": 5.756426995503716,
+          "socket_open_ms": 5.756426995503716,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 61
+        },
+        {
+          "ok": true,
+          "ms": 2.9975880024721846,
+          "socket_open_ms": 2.9975880024721846,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 62
+        },
+        {
+          "ok": true,
+          "ms": 5.008015999919735,
+          "socket_open_ms": 5.008015999919735,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 63
+        },
+        {
+          "ok": true,
+          "ms": 1.9258590036770329,
+          "socket_open_ms": 1.9258590036770329,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 64
+        },
+        {
+          "ok": true,
+          "ms": 1.5521889872616157,
+          "socket_open_ms": 1.5521889872616157,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 65
+        },
+        {
+          "ok": true,
+          "ms": 2.942574006738141,
+          "socket_open_ms": 2.942574006738141,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 66
+        },
+        {
+          "ok": true,
+          "ms": 2.9078299994580448,
+          "socket_open_ms": 2.9078299994580448,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 67
+        },
+        {
+          "ok": true,
+          "ms": 2.5939909974113107,
+          "socket_open_ms": 2.5939909974113107,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 68
+        },
+        {
+          "ok": true,
+          "ms": 2.3331429983954877,
+          "socket_open_ms": 2.3331429983954877,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 69
+        },
+        {
+          "ok": true,
+          "ms": 4.325226997025311,
+          "socket_open_ms": 4.325226997025311,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 70
+        },
+        {
+          "ok": true,
+          "ms": 5.674263011314906,
+          "socket_open_ms": 5.674263011314906,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 71
+        },
+        {
+          "ok": true,
+          "ms": 6.971034992602654,
+          "socket_open_ms": 6.971034992602654,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 72
+        },
+        {
+          "ok": true,
+          "ms": 2.748359998804517,
+          "socket_open_ms": 2.748359998804517,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 73
+        },
+        {
+          "ok": true,
+          "ms": 5.429486001958139,
+          "socket_open_ms": 5.429486001958139,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 74
+        },
+        {
+          "ok": true,
+          "ms": 11.52599100896623,
+          "socket_open_ms": 11.52599100896623,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 75
+        },
+        {
+          "ok": true,
+          "ms": 3.043643999262713,
+          "socket_open_ms": 3.043643999262713,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 76
+        },
+        {
+          "ok": true,
+          "ms": 4.2862230038736016,
+          "socket_open_ms": 4.2862230038736016,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 77
+        },
+        {
+          "ok": true,
+          "ms": 2.0168300106888637,
+          "socket_open_ms": 2.0168300106888637,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 78
+        },
+        {
+          "ok": true,
+          "ms": 1.7531949997646734,
+          "socket_open_ms": 1.7531949997646734,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 79
+        },
+        {
+          "ok": true,
+          "ms": 1.9208390003768727,
+          "socket_open_ms": 1.9208390003768727,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 80
+        },
+        {
+          "ok": true,
+          "ms": 1.6333809908246621,
+          "socket_open_ms": 1.6333809908246621,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 81
+        },
+        {
+          "ok": true,
+          "ms": 1.601090989424847,
+          "socket_open_ms": 1.601090989424847,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 82
+        },
+        {
+          "ok": true,
+          "ms": 15.818205996765755,
+          "socket_open_ms": 15.818205996765755,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 83
+        },
+        {
+          "ok": true,
+          "ms": 7.155140992836095,
+          "socket_open_ms": 7.155140992836095,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 84
+        },
+        {
+          "ok": true,
+          "ms": 5.558777003898285,
+          "socket_open_ms": 5.558777003898285,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 85
+        },
+        {
+          "ok": true,
+          "ms": 6.540608999785036,
+          "socket_open_ms": 6.540608999785036,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 86
+        },
+        {
+          "ok": true,
+          "ms": 2.32653999410104,
+          "socket_open_ms": 2.32653999410104,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 87
+        },
+        {
+          "ok": true,
+          "ms": 2.471571002388373,
+          "socket_open_ms": 2.471571002388373,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 88
+        },
+        {
+          "ok": true,
+          "ms": 2.314957993803546,
+          "socket_open_ms": 2.314957993803546,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 89
+        },
+        {
+          "ok": true,
+          "ms": 2.2792719973949715,
+          "socket_open_ms": 2.2792719973949715,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 90
+        },
+        {
+          "ok": true,
+          "ms": 3.310864995000884,
+          "socket_open_ms": 3.310864995000884,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 91
+        },
+        {
+          "ok": true,
+          "ms": 4.99434900120832,
+          "socket_open_ms": 4.99434900120832,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 92
+        },
+        {
+          "ok": true,
+          "ms": 2.2187379945535213,
+          "socket_open_ms": 2.2187379945535213,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 93
+        },
+        {
+          "ok": true,
+          "ms": 3.1982140062609687,
+          "socket_open_ms": 3.1982140062609687,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 94
+        },
+        {
+          "ok": true,
+          "ms": 4.002782006864436,
+          "socket_open_ms": 4.002782006864436,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 95
+        },
+        {
+          "ok": true,
+          "ms": 2.6662269956432283,
+          "socket_open_ms": 2.6662269956432283,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 96
+        },
+        {
+          "ok": true,
+          "ms": 2.9717790021095425,
+          "socket_open_ms": 2.9717790021095425,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 97
+        },
+        {
+          "ok": true,
+          "ms": 2.9315340070752427,
+          "socket_open_ms": 2.9315340070752427,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 98
+        },
+        {
+          "ok": true,
+          "ms": 9.942424992914312,
+          "socket_open_ms": 9.942424992914312,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 99
+        },
+        {
+          "ok": true,
+          "ms": 5.712303987820633,
+          "socket_open_ms": 5.712303987820633,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 100
+        }
+      ]
+    },
+    "tcp_ip": {
+      "summary": {
+        "samples": 100,
+        "successes": 100,
+        "failures": 0,
+        "first": {
+          "ok": true,
+          "ms": 0.16229400353040546
+        },
+        "median_ms": 0.050253998779226094,
+        "p95_ms": 0.06239699723664671,
+        "max_ms": 0.16229400353040546,
+        "over_10_ms": 0,
+        "connect_attempts": 0,
+        "socket_opens": 0
+      },
+      "session_setup": null,
+      "samples": [
+        {
+          "ok": true,
+          "ms": 0.16229400353040546,
+          "socket_open_ms": 0.16229400353040546,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 1
+        },
+        {
+          "ok": true,
+          "ms": 0.05244799831416458,
+          "socket_open_ms": 0.05244799831416458,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 2
+        },
+        {
+          "ok": true,
+          "ms": 0.060492995544336736,
+          "socket_open_ms": 0.060492995544336736,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 3
+        },
+        {
+          "ok": true,
+          "ms": 0.05073499050922692,
+          "socket_open_ms": 0.05073499050922692,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 4
+        },
+        {
+          "ok": true,
+          "ms": 0.09987701196223497,
+          "socket_open_ms": 0.09987701196223497,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 5
+        },
+        {
+          "ok": true,
+          "ms": 0.05913100903853774,
+          "socket_open_ms": 0.05913100903853774,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 6
+        },
+        {
+          "ok": true,
+          "ms": 0.050345013733021915,
+          "socket_open_ms": 0.050345013733021915,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 7
+        },
+        {
+          "ok": true,
+          "ms": 0.048089990741573274,
+          "socket_open_ms": 0.048089990741573274,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 8
+        },
+        {
+          "ok": true,
+          "ms": 0.04874099977314472,
+          "socket_open_ms": 0.04874099977314472,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 9
+        },
+        {
+          "ok": true,
+          "ms": 0.0506650103488937,
+          "socket_open_ms": 0.0506650103488937,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 10
+        },
+        {
+          "ok": true,
+          "ms": 0.04651700146496296,
+          "socket_open_ms": 0.04651700146496296,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 11
+        },
+        {
+          "ok": true,
+          "ms": 0.05557399708777666,
+          "socket_open_ms": 0.05557399708777666,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 12
+        },
+        {
+          "ok": true,
+          "ms": 0.05007401341572404,
+          "socket_open_ms": 0.05007401341572404,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 13
+        },
+        {
+          "ok": true,
+          "ms": 0.04849099786952138,
+          "socket_open_ms": 0.04849099786952138,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 14
+        },
+        {
+          "ok": true,
+          "ms": 0.04780899325851351,
+          "socket_open_ms": 0.04780899325851351,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 15
+        },
+        {
+          "ok": true,
+          "ms": 0.05019400850869715,
+          "socket_open_ms": 0.05019400850869715,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 16
+        },
+        {
+          "ok": true,
+          "ms": 0.0475089909741655,
+          "socket_open_ms": 0.0475089909741655,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 17
+        },
+        {
+          "ok": true,
+          "ms": 0.04651700146496296,
+          "socket_open_ms": 0.04651700146496296,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 18
+        },
+        {
+          "ok": true,
+          "ms": 0.04682799044530839,
+          "socket_open_ms": 0.04682799044530839,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 19
+        },
+        {
+          "ok": true,
+          "ms": 0.04635601362679154,
+          "socket_open_ms": 0.04635601362679154,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 20
+        },
+        {
+          "ok": true,
+          "ms": 0.04690799687523395,
+          "socket_open_ms": 0.04690799687523395,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 21
+        },
+        {
+          "ok": true,
+          "ms": 0.053580006351694465,
+          "socket_open_ms": 0.053580006351694465,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 22
+        },
+        {
+          "ok": true,
+          "ms": 0.050183996791020036,
+          "socket_open_ms": 0.050183996791020036,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 23
+        },
+        {
+          "ok": true,
+          "ms": 0.053028998081572354,
+          "socket_open_ms": 0.053028998081572354,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 24
+        },
+        {
+          "ok": true,
+          "ms": 0.04765900666825473,
+          "socket_open_ms": 0.04765900666825473,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 25
+        },
+        {
+          "ok": true,
+          "ms": 0.0520979956490919,
+          "socket_open_ms": 0.0520979956490919,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 26
+        },
+        {
+          "ok": true,
+          "ms": 0.04857098974753171,
+          "socket_open_ms": 0.04857098974753171,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 27
+        },
+        {
+          "ok": true,
+          "ms": 0.06239699723664671,
+          "socket_open_ms": 0.06239699723664671,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 28
+        },
+        {
+          "ok": true,
+          "ms": 0.04896199970971793,
+          "socket_open_ms": 0.04896199970971793,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 29
+        },
+        {
+          "ok": true,
+          "ms": 0.052668998250737786,
+          "socket_open_ms": 0.052668998250737786,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 30
+        },
+        {
+          "ok": true,
+          "ms": 0.04676799289882183,
+          "socket_open_ms": 0.04676799289882183,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 31
+        },
+        {
+          "ok": true,
+          "ms": 0.04748899664264172,
+          "socket_open_ms": 0.04748899664264172,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 32
+        },
+        {
+          "ok": true,
+          "ms": 0.04814000567421317,
+          "socket_open_ms": 0.04814000567421317,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 33
+        },
+        {
+          "ok": true,
+          "ms": 0.049071997636929154,
+          "socket_open_ms": 0.049071997636929154,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 34
+        },
+        {
+          "ok": true,
+          "ms": 0.04824000643566251,
+          "socket_open_ms": 0.04824000643566251,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 35
+        },
+        {
+          "ok": true,
+          "ms": 0.05254900315776467,
+          "socket_open_ms": 0.05254900315776467,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 36
+        },
+        {
+          "ok": true,
+          "ms": 0.049452995881438255,
+          "socket_open_ms": 0.049452995881438255,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 37
+        },
+        {
+          "ok": true,
+          "ms": 0.055603988585062325,
+          "socket_open_ms": 0.055603988585062325,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 38
+        },
+        {
+          "ok": true,
+          "ms": 0.04857100429944694,
+          "socket_open_ms": 0.04857100429944694,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 39
+        },
+        {
+          "ok": true,
+          "ms": 0.04866099334321916,
+          "socket_open_ms": 0.04866099334321916,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 40
+        },
+        {
+          "ok": true,
+          "ms": 0.04841099143959582,
+          "socket_open_ms": 0.04841099143959582,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 41
+        },
+        {
+          "ok": true,
+          "ms": 0.048330999561585486,
+          "socket_open_ms": 0.048330999561585486,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 42
+        },
+        {
+          "ok": true,
+          "ms": 0.04846099182032049,
+          "socket_open_ms": 0.04846099182032049,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 43
+        },
+        {
+          "ok": true,
+          "ms": 0.04735900438390672,
+          "socket_open_ms": 0.04735900438390672,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 44
+        },
+        {
+          "ok": true,
+          "ms": 0.04746900231111795,
+          "socket_open_ms": 0.04746900231111795,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 45
+        },
+        {
+          "ok": true,
+          "ms": 0.049371999921277165,
+          "socket_open_ms": 0.049371999921277165,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 46
+        },
+        {
+          "ok": true,
+          "ms": 0.05744698864873499,
+          "socket_open_ms": 0.05744698864873499,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 47
+        },
+        {
+          "ok": true,
+          "ms": 0.05378099740482867,
+          "socket_open_ms": 0.05378099740482867,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 48
+        },
+        {
+          "ok": true,
+          "ms": 0.051556009566411376,
+          "socket_open_ms": 0.051556009566411376,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 49
+        },
+        {
+          "ok": true,
+          "ms": 0.04991301102563739,
+          "socket_open_ms": 0.04991301102563739,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 50
+        },
+        {
+          "ok": true,
+          "ms": 0.05031398904975504,
+          "socket_open_ms": 0.05031398904975504,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 51
+        },
+        {
+          "ok": true,
+          "ms": 0.05107499600853771,
+          "socket_open_ms": 0.05107499600853771,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 52
+        },
+        {
+          "ok": true,
+          "ms": 0.05390099249780178,
+          "socket_open_ms": 0.05390099249780178,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 53
+        },
+        {
+          "ok": true,
+          "ms": 0.05145599425304681,
+          "socket_open_ms": 0.05145599425304681,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 54
+        },
+        {
+          "ok": true,
+          "ms": 0.052197996410541236,
+          "socket_open_ms": 0.052197996410541236,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 55
+        },
+        {
+          "ok": true,
+          "ms": 0.05103599687572569,
+          "socket_open_ms": 0.05103599687572569,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 56
+        },
+        {
+          "ok": true,
+          "ms": 0.05116598913446069,
+          "socket_open_ms": 0.05116598913446069,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 57
+        },
+        {
+          "ok": true,
+          "ms": 0.05496300582308322,
+          "socket_open_ms": 0.05496300582308322,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 58
+        },
+        {
+          "ok": true,
+          "ms": 0.056285003665834665,
+          "socket_open_ms": 0.056285003665834665,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 59
+        },
+        {
+          "ok": true,
+          "ms": 0.06033299723640084,
+          "socket_open_ms": 0.06033299723640084,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 60
+        },
+        {
+          "ok": true,
+          "ms": 0.06200700590852648,
+          "socket_open_ms": 0.06200700590852648,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 61
+        },
+        {
+          "ok": true,
+          "ms": 0.0607739930273965,
+          "socket_open_ms": 0.0607739930273965,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 62
+        },
+        {
+          "ok": true,
+          "ms": 0.061345010180957615,
+          "socket_open_ms": 0.061345010180957615,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 63
+        },
+        {
+          "ok": true,
+          "ms": 0.0614560121903196,
+          "socket_open_ms": 0.0614560121903196,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 64
+        },
+        {
+          "ok": true,
+          "ms": 0.053921001381240785,
+          "socket_open_ms": 0.053921001381240785,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 65
+        },
+        {
+          "ok": true,
+          "ms": 0.054181989980861545,
+          "socket_open_ms": 0.054181989980861545,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 66
+        },
+        {
+          "ok": true,
+          "ms": 0.0465669872937724,
+          "socket_open_ms": 0.0465669872937724,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 67
+        },
+        {
+          "ok": true,
+          "ms": 0.04296099359635264,
+          "socket_open_ms": 0.04296099359635264,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 68
+        },
+        {
+          "ok": true,
+          "ms": 0.04342099418863654,
+          "socket_open_ms": 0.04342099418863654,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 69
+        },
+        {
+          "ok": true,
+          "ms": 0.045845998101867735,
+          "socket_open_ms": 0.045845998101867735,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 70
+        },
+        {
+          "ok": true,
+          "ms": 0.09755299834068865,
+          "socket_open_ms": 0.09755299834068865,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 71
+        },
+        {
+          "ok": true,
+          "ms": 0.043451000237837434,
+          "socket_open_ms": 0.043451000237837434,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 72
+        },
+        {
+          "ok": true,
+          "ms": 0.04234000516589731,
+          "socket_open_ms": 0.04234000516589731,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 73
+        },
+        {
+          "ok": true,
+          "ms": 0.04332199750933796,
+          "socket_open_ms": 0.04332199750933796,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 74
+        },
+        {
+          "ok": true,
+          "ms": 0.04207900201436132,
+          "socket_open_ms": 0.04207900201436132,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 75
+        },
+        {
+          "ok": true,
+          "ms": 0.04127698775846511,
+          "socket_open_ms": 0.04127698775846511,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 76
+        },
+        {
+          "ok": true,
+          "ms": 0.04178800736553967,
+          "socket_open_ms": 0.04178800736553967,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 77
+        },
+        {
+          "ok": true,
+          "ms": 0.05560500721912831,
+          "socket_open_ms": 0.05560500721912831,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 78
+        },
+        {
+          "ok": true,
+          "ms": 0.0469980004709214,
+          "socket_open_ms": 0.0469980004709214,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 79
+        },
+        {
+          "ok": true,
+          "ms": 0.047770008677616715,
+          "socket_open_ms": 0.047770008677616715,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 80
+        },
+        {
+          "ok": true,
+          "ms": 0.05337999027688056,
+          "socket_open_ms": 0.05337999027688056,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 81
+        },
+        {
+          "ok": true,
+          "ms": 0.050314003601670265,
+          "socket_open_ms": 0.050314003601670265,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 82
+        },
+        {
+          "ok": true,
+          "ms": 0.04886199894826859,
+          "socket_open_ms": 0.04886199894826859,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 83
+        },
+        {
+          "ok": true,
+          "ms": 0.04879200423602015,
+          "socket_open_ms": 0.04879200423602015,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 84
+        },
+        {
+          "ok": true,
+          "ms": 0.0497230066685006,
+          "socket_open_ms": 0.0497230066685006,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 85
+        },
+        {
+          "ok": true,
+          "ms": 0.056056000175885856,
+          "socket_open_ms": 0.056056000175885856,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 86
+        },
+        {
+          "ok": true,
+          "ms": 0.059161000535823405,
+          "socket_open_ms": 0.059161000535823405,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 87
+        },
+        {
+          "ok": true,
+          "ms": 0.06641399522777647,
+          "socket_open_ms": 0.06641399522777647,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 88
+        },
+        {
+          "ok": true,
+          "ms": 0.06294800550676882,
+          "socket_open_ms": 0.06294800550676882,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 89
+        },
+        {
+          "ok": true,
+          "ms": 0.04960299702361226,
+          "socket_open_ms": 0.04960299702361226,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 90
+        },
+        {
+          "ok": true,
+          "ms": 0.047528999857604504,
+          "socket_open_ms": 0.047528999857604504,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 91
+        },
+        {
+          "ok": true,
+          "ms": 0.05047400190960616,
+          "socket_open_ms": 0.05047400190960616,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 92
+        },
+        {
+          "ok": true,
+          "ms": 0.052619012421928346,
+          "socket_open_ms": 0.052619012421928346,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 93
+        },
+        {
+          "ok": true,
+          "ms": 0.05418200453277677,
+          "socket_open_ms": 0.05418200453277677,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 94
+        },
+        {
+          "ok": true,
+          "ms": 0.05210799281485379,
+          "socket_open_ms": 0.05210799281485379,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 95
+        },
+        {
+          "ok": true,
+          "ms": 0.056464996305294335,
+          "socket_open_ms": 0.056464996305294335,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 96
+        },
+        {
+          "ok": true,
+          "ms": 0.05784899985883385,
+          "socket_open_ms": 0.05784899985883385,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 97
+        },
+        {
+          "ok": true,
+          "ms": 0.053059004130773246,
+          "socket_open_ms": 0.053059004130773246,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 98
+        },
+        {
+          "ok": true,
+          "ms": 0.04988400905858725,
+          "socket_open_ms": 0.04988400905858725,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 99
+        },
+        {
+          "ok": true,
+          "ms": 0.048501009587198496,
+          "socket_open_ms": 0.048501009587198496,
+          "peer": "172.21.0.35",
+          "connects": [],
+          "sample": 100
+        }
+      ]
+    },
+    "http_fresh": {
+      "summary": {
+        "samples": 100,
+        "successes": 100,
+        "failures": 0,
+        "first": {
+          "ok": true,
+          "ms": 31.260044997907244
+        },
+        "median_ms": 4.4123650004621595,
+        "p95_ms": 15.93850099015981,
+        "max_ms": 32.06116700312123,
+        "over_10_ms": 8,
+        "connect_attempts": 100,
+        "socket_opens": 100
+      },
+      "session_setup": null,
+      "samples": [
+        {
+          "ok": true,
+          "ms": 31.260044997907244,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.50224559,
+              "ms": 3.522341008647345,
+              "ok": true,
+              "local_port": 48136,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 1
+        },
+        {
+          "ok": true,
+          "ms": 8.788711013039574,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.53337474,
+              "ms": 3.7085100047988817,
+              "ok": true,
+              "local_port": 48142,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 2
+        },
+        {
+          "ok": true,
+          "ms": 6.098950994783081,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.54215775,
+              "ms": 4.300178989069536,
+              "ok": true,
+              "local_port": 48158,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 3
+        },
+        {
+          "ok": true,
+          "ms": 2.784197000437416,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.548256701,
+              "ms": 1.574339999933727,
+              "ok": true,
+              "local_port": 48174,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 4
+        },
+        {
+          "ok": true,
+          "ms": 2.9048540018266067,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.551049454,
+              "ms": 1.557669005705975,
+              "ok": true,
+              "local_port": 48184,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 5
+        },
+        {
+          "ok": true,
+          "ms": 3.560714001650922,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.553959448,
+              "ms": 2.005528993322514,
+              "ok": true,
+              "local_port": 48190,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 6
+        },
+        {
+          "ok": true,
+          "ms": 4.2985259933630005,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.557527495,
+              "ms": 2.151181994122453,
+              "ok": true,
+              "local_port": 48202,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 7
+        },
+        {
+          "ok": true,
+          "ms": 3.530144997057505,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.561834818,
+              "ms": 2.2142189991427585,
+              "ok": true,
+              "local_port": 48206,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 8
+        },
+        {
+          "ok": true,
+          "ms": 4.476941001485102,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.565376815,
+              "ms": 2.1803059935336933,
+              "ok": true,
+              "local_port": 48212,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 9
+        },
+        {
+          "ok": true,
+          "ms": 5.2335990039864555,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.569872992,
+              "ms": 3.3270659914705902,
+              "ok": true,
+              "local_port": 48226,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 10
+        },
+        {
+          "ok": true,
+          "ms": 3.673933999380097,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.575117161,
+              "ms": 2.3824349918868393,
+              "ok": true,
+              "local_port": 48234,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 11
+        },
+        {
+          "ok": true,
+          "ms": 5.963967996649444,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.578781478,
+              "ms": 3.799431011429988,
+              "ok": true,
+              "local_port": 48238,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 12
+        },
+        {
+          "ok": true,
+          "ms": 4.037628008518368,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.584771594,
+              "ms": 2.1716699993703514,
+              "ok": true,
+              "local_port": 48254,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 13
+        },
+        {
+          "ok": true,
+          "ms": 3.6852670018561184,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.588816576,
+              "ms": 2.1577040024567395,
+              "ok": true,
+              "local_port": 48268,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 14
+        },
+        {
+          "ok": true,
+          "ms": 5.890768996323459,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.592508625,
+              "ms": 4.366943001514301,
+              "ok": true,
+              "local_port": 48284,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 15
+        },
+        {
+          "ok": true,
+          "ms": 3.5548729938454926,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.598393343,
+              "ms": 2.0455339981708676,
+              "ok": true,
+              "local_port": 48292,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 16
+        },
+        {
+          "ok": true,
+          "ms": 3.7787920009577647,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.601951823,
+              "ms": 2.4378490052185953,
+              "ok": true,
+              "local_port": 48302,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 17
+        },
+        {
+          "ok": true,
+          "ms": 3.2003369997255504,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.60573365,
+              "ms": 1.6665430011926219,
+              "ok": true,
+              "local_port": 48316,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 18
+        },
+        {
+          "ok": true,
+          "ms": 4.303737005102448,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.608944817,
+              "ms": 2.5623619876569137,
+              "ok": true,
+              "local_port": 48320,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 19
+        },
+        {
+          "ok": true,
+          "ms": 5.827672008308582,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.613271457,
+              "ms": 4.156129987677559,
+              "ok": true,
+              "local_port": 48322,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 20
+        },
+        {
+          "ok": true,
+          "ms": 8.306816991535015,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.619108677,
+              "ms": 4.465548001462594,
+              "ok": true,
+              "local_port": 48336,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 21
+        },
+        {
+          "ok": true,
+          "ms": 29.189745997427963,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.62753587,
+              "ms": 26.729514996986836,
+              "ok": true,
+              "local_port": 48338,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 22
+        },
+        {
+          "ok": true,
+          "ms": 4.404516002978198,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.65666932,
+              "ms": 2.7213600114919245,
+              "ok": true,
+              "local_port": 48340,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 23
+        },
+        {
+          "ok": true,
+          "ms": 5.292066998663358,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.661062093,
+              "ms": 2.6056130009237677,
+              "ok": true,
+              "local_port": 48342,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 24
+        },
+        {
+          "ok": true,
+          "ms": 6.155766997835599,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.666461763,
+              "ms": 4.274631006410345,
+              "ok": true,
+              "local_port": 48352,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 25
+        },
+        {
+          "ok": true,
+          "ms": 8.550515995011665,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.67251103,
+              "ms": 6.86879399290774,
+              "ok": true,
+              "local_port": 48360,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 26
+        },
+        {
+          "ok": true,
+          "ms": 9.009985995362513,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.681079419,
+              "ms": 7.100957998773083,
+              "ok": true,
+              "local_port": 48362,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 27
+        },
+        {
+          "ok": true,
+          "ms": 10.058950996608473,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.690102339,
+              "ms": 7.744784001260996,
+              "ok": true,
+              "local_port": 48370,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 28
+        },
+        {
+          "ok": true,
+          "ms": 32.06116700312123,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.700184924,
+              "ms": 27.723878010874614,
+              "ok": true,
+              "local_port": 48378,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 29
+        },
+        {
+          "ok": true,
+          "ms": 8.538330992450938,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.732240862,
+              "ms": 5.002836012863554,
+              "ok": true,
+              "local_port": 48382,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 30
+        },
+        {
+          "ok": true,
+          "ms": 4.482712000026368,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.740796776,
+              "ms": 2.739054005360231,
+              "ok": true,
+              "local_port": 48398,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 31
+        },
+        {
+          "ok": true,
+          "ms": 9.984752992750145,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.745284217,
+              "ms": 7.418003006023355,
+              "ok": true,
+              "local_port": 48412,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 32
+        },
+        {
+          "ok": true,
+          "ms": 4.945930006215349,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.755289187,
+              "ms": 2.786522003589198,
+              "ok": true,
+              "local_port": 48418,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 33
+        },
+        {
+          "ok": true,
+          "ms": 5.119553999975324,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.760270673,
+              "ms": 2.755032997811213,
+              "ok": true,
+              "local_port": 48422,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 34
+        },
+        {
+          "ok": true,
+          "ms": 5.677620007190853,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.765372685,
+              "ms": 3.2668910134816542,
+              "ok": true,
+              "local_port": 48424,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 35
+        },
+        {
+          "ok": true,
+          "ms": 4.974123003194109,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.771072507,
+              "ms": 2.7370700117899105,
+              "ok": true,
+              "local_port": 48436,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 36
+        },
+        {
+          "ok": true,
+          "ms": 6.947430010768585,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.776122712,
+              "ms": 4.961087994161062,
+              "ok": true,
+              "local_port": 48446,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 37
+        },
+        {
+          "ok": true,
+          "ms": 17.05769899126608,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.78300511,
+              "ms": 15.383761012344621,
+              "ok": true,
+              "local_port": 48456,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 38
+        },
+        {
+          "ok": true,
+          "ms": 7.719789005932398,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.800092955,
+              "ms": 4.978401004336774,
+              "ok": true,
+              "local_port": 48462,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 39
+        },
+        {
+          "ok": true,
+          "ms": 6.994227995164692,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.807816701,
+              "ms": 4.460027004824951,
+              "ok": true,
+              "local_port": 48476,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 40
+        },
+        {
+          "ok": true,
+          "ms": 4.174945002887398,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.814811369,
+              "ms": 2.1891729993512854,
+              "ok": true,
+              "local_port": 48486,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 41
+        },
+        {
+          "ok": true,
+          "ms": 4.936059005558491,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.819003877,
+              "ms": 3.0502459994750097,
+              "ok": true,
+              "local_port": 48500,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 42
+        },
+        {
+          "ok": true,
+          "ms": 5.450766009744257,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.823932794,
+              "ms": 2.9252520034788176,
+              "ok": true,
+              "local_port": 48514,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 43
+        },
+        {
+          "ok": true,
+          "ms": 4.895485995803028,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.829414628,
+              "ms": 2.3543720017187297,
+              "ok": true,
+              "local_port": 48528,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 44
+        },
+        {
+          "ok": true,
+          "ms": 3.4375819959677756,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.834297299,
+              "ms": 1.8401980050839484,
+              "ok": true,
+              "local_port": 48536,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 45
+        },
+        {
+          "ok": true,
+          "ms": 5.281047007883899,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.837747064,
+              "ms": 3.2077310024760664,
+              "ok": true,
+              "local_port": 48548,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 46
+        },
+        {
+          "ok": true,
+          "ms": 4.420213997946121,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.843044422,
+              "ms": 2.259685003082268,
+              "ok": true,
+              "local_port": 48556,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 47
+        },
+        {
+          "ok": true,
+          "ms": 4.170515006990172,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.847470457,
+              "ms": 2.166448990465142,
+              "ok": true,
+              "local_port": 48570,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 48
+        },
+        {
+          "ok": true,
+          "ms": 3.2295630080625415,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.851664026,
+              "ms": 1.9394550035940483,
+              "ok": true,
+              "local_port": 48578,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 49
+        },
+        {
+          "ok": true,
+          "ms": 3.332745996885933,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.854874663,
+              "ms": 1.8524420011090115,
+              "ok": true,
+              "local_port": 48592,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 50
+        },
+        {
+          "ok": true,
+          "ms": 2.8257960075279698,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.858211197,
+              "ms": 1.5585609944537282,
+              "ok": true,
+              "local_port": 48596,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 51
+        },
+        {
+          "ok": true,
+          "ms": 4.520140995737165,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.861044337,
+              "ms": 2.7348860021447763,
+              "ok": true,
+              "local_port": 48610,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 52
+        },
+        {
+          "ok": true,
+          "ms": 5.549489986151457,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.865591478,
+              "ms": 4.184983001323417,
+              "ok": true,
+              "local_port": 48612,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 53
+        },
+        {
+          "ok": true,
+          "ms": 6.163560989079997,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.871125069,
+              "ms": 4.521463997662067,
+              "ok": true,
+              "local_port": 48620,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 54
+        },
+        {
+          "ok": true,
+          "ms": 2.583280991530046,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.877296234,
+              "ms": 1.5357770025730133,
+              "ok": true,
+              "local_port": 48626,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 55
+        },
+        {
+          "ok": true,
+          "ms": 2.398095006356016,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.879897539,
+              "ms": 1.4578029949916527,
+              "ok": true,
+              "local_port": 48638,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 56
+        },
+        {
+          "ok": true,
+          "ms": 4.553594990284182,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.882300492,
+              "ms": 2.468906997819431,
+              "ok": true,
+              "local_port": 48650,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 57
+        },
+        {
+          "ok": true,
+          "ms": 7.123739997041412,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.886967299,
+              "ms": 5.182484004762955,
+              "ok": true,
+              "local_port": 48656,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 58
+        },
+        {
+          "ok": true,
+          "ms": 4.712201000074856,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.893998867,
+              "ms": 1.6483380022691563,
+              "ok": true,
+              "local_port": 48666,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 59
+        },
+        {
+          "ok": true,
+          "ms": 4.834772000322118,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.8987278,
+              "ms": 1.9923450017813593,
+              "ok": true,
+              "local_port": 48674,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 60
+        },
+        {
+          "ok": true,
+          "ms": 3.744556990568526,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.90355667,
+              "ms": 2.1300510125001892,
+              "ok": true,
+              "local_port": 48680,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 61
+        },
+        {
+          "ok": true,
+          "ms": 2.6976159861078486,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.907300285,
+              "ms": 1.6244350117631257,
+              "ok": true,
+              "local_port": 48682,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 62
+        },
+        {
+          "ok": true,
+          "ms": 2.276396000524983,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.910001227,
+              "ms": 1.3023409992456436,
+              "ok": true,
+              "local_port": 48686,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 63
+        },
+        {
+          "ok": true,
+          "ms": 3.1060720066307113,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.912277944,
+              "ms": 1.807927998015657,
+              "ok": true,
+              "local_port": 48702,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 64
+        },
+        {
+          "ok": true,
+          "ms": 3.566986008081585,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.915409744,
+              "ms": 2.1306029957486317,
+              "ok": true,
+              "local_port": 48710,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 65
+        },
+        {
+          "ok": true,
+          "ms": 5.640158997266553,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.91899296,
+              "ms": 3.8565270078834146,
+              "ok": true,
+              "local_port": 48716,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 66
+        },
+        {
+          "ok": true,
+          "ms": 3.260109995608218,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.92463369,
+              "ms": 1.944553994690068,
+              "ok": true,
+              "local_port": 48718,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 67
+        },
+        {
+          "ok": true,
+          "ms": 16.68494001205545,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.927917305,
+              "ms": 14.443428997765295,
+              "ok": true,
+              "local_port": 48728,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 68
+        },
+        {
+          "ok": true,
+          "ms": 3.40371900529135,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.944609639,
+              "ms": 1.9370509980944917,
+              "ok": true,
+              "local_port": 48732,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 69
+        },
+        {
+          "ok": true,
+          "ms": 2.804304996971041,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.948113065,
+              "ms": 1.6958880005404353,
+              "ok": true,
+              "local_port": 48742,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 70
+        },
+        {
+          "ok": true,
+          "ms": 6.734922993928194,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.950819556,
+              "ms": 5.145903996890411,
+              "ok": true,
+              "local_port": 48750,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 71
+        },
+        {
+          "ok": true,
+          "ms": 3.9271699934033677,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.957564007,
+              "ms": 2.1761490061180666,
+              "ok": true,
+              "local_port": 48762,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 72
+        },
+        {
+          "ok": true,
+          "ms": 3.6236209998605773,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.961524409,
+              "ms": 1.990428994758986,
+              "ok": true,
+              "local_port": 48766,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 73
+        },
+        {
+          "ok": true,
+          "ms": 3.9116819971241057,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.965145935,
+              "ms": 2.3662750027142465,
+              "ok": true,
+              "local_port": 48770,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 74
+        },
+        {
+          "ok": true,
+          "ms": 3.952137994929217,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.969050924,
+              "ms": 2.1444289886858314,
+              "ok": true,
+              "local_port": 48782,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 75
+        },
+        {
+          "ok": true,
+          "ms": 8.29512599739246,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.973004514,
+              "ms": 4.466911006602459,
+              "ok": true,
+              "local_port": 48786,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 76
+        },
+        {
+          "ok": true,
+          "ms": 3.781637002248317,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.981332982,
+              "ms": 2.0567549945553765,
+              "ok": true,
+              "local_port": 48790,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 77
+        },
+        {
+          "ok": true,
+          "ms": 4.304126996430568,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.98510414,
+              "ms": 2.3686390049988404,
+              "ok": true,
+              "local_port": 48794,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 78
+        },
+        {
+          "ok": true,
+          "ms": 6.778644004953094,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.98944186,
+              "ms": 5.071224004495889,
+              "ok": true,
+              "local_port": 48802,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 79
+        },
+        {
+          "ok": true,
+          "ms": 2.733433007961139,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.996210244,
+              "ms": 1.5916529955575243,
+              "ok": true,
+              "local_port": 48818,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 80
+        },
+        {
+          "ok": true,
+          "ms": 3.207521003787406,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99514.999028236,
+              "ms": 1.7260749882552773,
+              "ok": true,
+              "local_port": 48834,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 81
+        },
+        {
+          "ok": true,
+          "ms": 3.450946998782456,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.002180755,
+              "ms": 2.1466629987116903,
+              "ok": true,
+              "local_port": 48846,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 82
+        },
+        {
+          "ok": true,
+          "ms": 3.1443920015590265,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.005620451,
+              "ms": 1.425561000360176,
+              "ok": true,
+              "local_port": 48860,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 83
+        },
+        {
+          "ok": true,
+          "ms": 3.548841006704606,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.008829374,
+              "ms": 2.162842996767722,
+              "ok": true,
+              "local_port": 48862,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 84
+        },
+        {
+          "ok": true,
+          "ms": 3.3857060043374076,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.012340525,
+              "ms": 1.644321993808262,
+              "ok": true,
+              "local_port": 48870,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 85
+        },
+        {
+          "ok": true,
+          "ms": 12.216394999995828,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.015726691,
+              "ms": 1.6683860012562945,
+              "ok": true,
+              "local_port": 48874,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 86
+        },
+        {
+          "ok": true,
+          "ms": 15.93850099015981,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.027972,
+              "ms": 14.070229008211754,
+              "ok": true,
+              "local_port": 48886,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 87
+        },
+        {
+          "ok": true,
+          "ms": 3.269876993726939,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.043911614,
+              "ms": 2.0902669930364937,
+              "ok": true,
+              "local_port": 48888,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 88
+        },
+        {
+          "ok": true,
+          "ms": 2.780310998787172,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.04718129,
+              "ms": 1.6832440014695749,
+              "ok": true,
+              "local_port": 48898,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 89
+        },
+        {
+          "ok": true,
+          "ms": 3.250242007197812,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.049969456,
+              "ms": 1.5087679930729792,
+              "ok": true,
+              "local_port": 48904,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 90
+        },
+        {
+          "ok": true,
+          "ms": 4.715688002761453,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.053230398,
+              "ms": 2.564395996159874,
+              "ok": true,
+              "local_port": 48920,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 91
+        },
+        {
+          "ok": true,
+          "ms": 3.3814060006989166,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.057953699,
+              "ms": 1.8314909975742921,
+              "ok": true,
+              "local_port": 48922,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 92
+        },
+        {
+          "ok": true,
+          "ms": 3.8007030088920146,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.061337601,
+              "ms": 2.498293004464358,
+              "ok": true,
+              "local_port": 48938,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 93
+        },
+        {
+          "ok": true,
+          "ms": 4.203257994959131,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.065136932,
+              "ms": 2.5855260028038174,
+              "ok": true,
+              "local_port": 48954,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 94
+        },
+        {
+          "ok": true,
+          "ms": 7.836364995455369,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.069448393,
+              "ms": 5.613439992885105,
+              "ok": true,
+              "local_port": 48956,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 95
+        },
+        {
+          "ok": true,
+          "ms": 3.3397789957234636,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.077220979,
+              "ms": 2.145851991372183,
+              "ok": true,
+              "local_port": 48966,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 96
+        },
+        {
+          "ok": true,
+          "ms": 3.0354990012710914,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.08056161,
+              "ms": 1.514147996203974,
+              "ok": true,
+              "local_port": 48972,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 97
+        },
+        {
+          "ok": true,
+          "ms": 4.748859006213024,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.083610334,
+              "ms": 1.9733380031539127,
+              "ok": true,
+              "local_port": 48986,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 98
+        },
+        {
+          "ok": true,
+          "ms": 3.1790389912202954,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.0883789,
+              "ms": 1.7973189969779924,
+              "ok": true,
+              "local_port": 48988,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 99
+        },
+        {
+          "ok": true,
+          "ms": 5.287791005684994,
+          "status": "200",
+          "bytes": 73,
+          "connection": "close",
+          "http_version": "1.1",
+          "connects": [
+            {
+              "started": 99515.091546396,
+              "ms": 3.6704489903058857,
+              "ok": true,
+              "local_port": 48990,
+              "peer": "172.21.0.35"
+            }
+          ],
+          "sample": 100
+        }
+      ]
+    },
+    "http_persistent": {
+      "summary": {
+        "samples": 100,
+        "successes": 100,
+        "failures": 0,
+        "first": {
+          "ok": true,
+          "ms": 1.2210279965074733
+        },
+        "median_ms": 0.7244280059239827,
+        "p95_ms": 2.313556004082784,
+        "max_ms": 11.426162993302569,
+        "over_10_ms": 2,
+        "connect_attempts": 0,
+        "socket_opens": 0
+      },
+      "session_setup": {
+        "ok": true,
+        "ms": 4.203477990813553,
+        "connects": [
+          {
+            "started": 99515.096959953,
+            "ms": 4.166258004261181,
+            "ok": true,
+            "local_port": 49002,
+            "peer": "172.21.0.35"
+          }
+        ]
+      },
+      "samples": [
+        {
+          "ok": true,
+          "ms": 1.2210279965074733,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 1
+        },
+        {
+          "ok": true,
+          "ms": 1.0205519938608631,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 2
+        },
+        {
+          "ok": true,
+          "ms": 0.6564299983438104,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 3
+        },
+        {
+          "ok": true,
+          "ms": 1.6052989958552644,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 4
+        },
+        {
+          "ok": true,
+          "ms": 0.7466899987775832,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 5
+        },
+        {
+          "ok": true,
+          "ms": 0.6690430018352345,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 6
+        },
+        {
+          "ok": true,
+          "ms": 0.6481550080934539,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 7
+        },
+        {
+          "ok": true,
+          "ms": 0.6713780021527782,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 8
+        },
+        {
+          "ok": true,
+          "ms": 0.6796639936510473,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 9
+        },
+        {
+          "ok": true,
+          "ms": 0.6470119988080114,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 10
+        },
+        {
+          "ok": true,
+          "ms": 1.1077470117015764,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 11
+        },
+        {
+          "ok": true,
+          "ms": 0.6840120040578768,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 12
+        },
+        {
+          "ok": true,
+          "ms": 1.1010539892595261,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 13
+        },
+        {
+          "ok": true,
+          "ms": 3.76319199858699,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 14
+        },
+        {
+          "ok": true,
+          "ms": 0.8146770123858005,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 15
+        },
+        {
+          "ok": true,
+          "ms": 1.0990899900207296,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 16
+        },
+        {
+          "ok": true,
+          "ms": 3.2949159940471873,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 17
+        },
+        {
+          "ok": true,
+          "ms": 2.2570699948119,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 18
+        },
+        {
+          "ok": true,
+          "ms": 11.30522700259462,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 19
+        },
+        {
+          "ok": true,
+          "ms": 2.424555001198314,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 20
+        },
+        {
+          "ok": true,
+          "ms": 2.313556004082784,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 21
+        },
+        {
+          "ok": true,
+          "ms": 1.062570998328738,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 22
+        },
+        {
+          "ok": true,
+          "ms": 1.6130220028571784,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 23
+        },
+        {
+          "ok": true,
+          "ms": 1.570952998008579,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 24
+        },
+        {
+          "ok": true,
+          "ms": 1.943872994161211,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 25
+        },
+        {
+          "ok": true,
+          "ms": 0.7231950003188103,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 26
+        },
+        {
+          "ok": true,
+          "ms": 0.7174950005719438,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 27
+        },
+        {
+          "ok": true,
+          "ms": 0.7140989910112694,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 28
+        },
+        {
+          "ok": true,
+          "ms": 1.0151620081160218,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 29
+        },
+        {
+          "ok": true,
+          "ms": 0.6040220032446086,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 30
+        },
+        {
+          "ok": true,
+          "ms": 0.7186270086094737,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 31
+        },
+        {
+          "ok": true,
+          "ms": 0.6373340002028272,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 32
+        },
+        {
+          "ok": true,
+          "ms": 0.9488289942964911,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 33
+        },
+        {
+          "ok": true,
+          "ms": 1.2440620048437268,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 34
+        },
+        {
+          "ok": true,
+          "ms": 1.3757779961451888,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 35
+        },
+        {
+          "ok": true,
+          "ms": 0.6680020014755428,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 36
+        },
+        {
+          "ok": true,
+          "ms": 0.9827320027397946,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 37
+        },
+        {
+          "ok": true,
+          "ms": 0.7086680125212297,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 38
+        },
+        {
+          "ok": true,
+          "ms": 0.6077489961171523,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 39
+        },
+        {
+          "ok": true,
+          "ms": 0.6217549962457269,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 40
+        },
+        {
+          "ok": true,
+          "ms": 0.6130190013209358,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 41
+        },
+        {
+          "ok": true,
+          "ms": 0.8525580051355064,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 42
+        },
+        {
+          "ok": true,
+          "ms": 0.6686339911539108,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 43
+        },
+        {
+          "ok": true,
+          "ms": 0.5866099963895977,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 44
+        },
+        {
+          "ok": true,
+          "ms": 0.6538950110552832,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 45
+        },
+        {
+          "ok": true,
+          "ms": 0.8353059965884313,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 46
+        },
+        {
+          "ok": true,
+          "ms": 0.7245980086736381,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 47
+        },
+        {
+          "ok": true,
+          "ms": 0.5467049923026934,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 48
+        },
+        {
+          "ok": true,
+          "ms": 0.7119649962987751,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 49
+        },
+        {
+          "ok": true,
+          "ms": 0.7841699989512563,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 50
+        },
+        {
+          "ok": true,
+          "ms": 0.5604109901469201,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 51
+        },
+        {
+          "ok": true,
+          "ms": 0.6113859999459237,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 52
+        },
+        {
+          "ok": true,
+          "ms": 0.8150579960783944,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 53
+        },
+        {
+          "ok": true,
+          "ms": 1.0701949940994382,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 54
+        },
+        {
+          "ok": true,
+          "ms": 0.8584089955547825,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 55
+        },
+        {
+          "ok": true,
+          "ms": 0.9642869990784675,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 56
+        },
+        {
+          "ok": true,
+          "ms": 0.7246979948831722,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 57
+        },
+        {
+          "ok": true,
+          "ms": 0.9668419952504337,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 58
+        },
+        {
+          "ok": true,
+          "ms": 0.6886409973958507,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 59
+        },
+        {
+          "ok": true,
+          "ms": 0.6540559988934547,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 60
+        },
+        {
+          "ok": true,
+          "ms": 0.58232199808117,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 61
+        },
+        {
+          "ok": true,
+          "ms": 0.7098900096025318,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 62
+        },
+        {
+          "ok": true,
+          "ms": 0.7277039985638112,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 63
+        },
+        {
+          "ok": true,
+          "ms": 0.7940979994600639,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 64
+        },
+        {
+          "ok": true,
+          "ms": 0.614771997788921,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 65
+        },
+        {
+          "ok": true,
+          "ms": 0.8062009874265641,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 66
+        },
+        {
+          "ok": true,
+          "ms": 0.6453800015151501,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 67
+        },
+        {
+          "ok": true,
+          "ms": 0.7249490008689463,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 68
+        },
+        {
+          "ok": true,
+          "ms": 0.7223639986477792,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 69
+        },
+        {
+          "ok": true,
+          "ms": 1.3956059992779046,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 70
+        },
+        {
+          "ok": true,
+          "ms": 11.426162993302569,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 71
+        },
+        {
+          "ok": true,
+          "ms": 1.1440849921200424,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 72
+        },
+        {
+          "ok": true,
+          "ms": 1.007678991300054,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 73
+        },
+        {
+          "ok": true,
+          "ms": 0.813483988167718,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 74
+        },
+        {
+          "ok": true,
+          "ms": 0.8317289903061464,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 75
+        },
+        {
+          "ok": true,
+          "ms": 0.6286579882726073,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 76
+        },
+        {
+          "ok": true,
+          "ms": 0.5787749978480861,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 77
+        },
+        {
+          "ok": true,
+          "ms": 0.6558989989571273,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 78
+        },
+        {
+          "ok": true,
+          "ms": 0.6066670030122623,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 79
+        },
+        {
+          "ok": true,
+          "ms": 1.5573679993394762,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 80
+        },
+        {
+          "ok": true,
+          "ms": 0.7491839933209121,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 81
+        },
+        {
+          "ok": true,
+          "ms": 0.5439300002763048,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 82
+        },
+        {
+          "ok": true,
+          "ms": 0.6436260009650141,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 83
+        },
+        {
+          "ok": true,
+          "ms": 1.1060730030294508,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 84
+        },
+        {
+          "ok": true,
+          "ms": 0.7187470037024468,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 85
+        },
+        {
+          "ok": true,
+          "ms": 0.7242580031743273,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 86
+        },
+        {
+          "ok": true,
+          "ms": 0.5331589927664027,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 87
+        },
+        {
+          "ok": true,
+          "ms": 0.5248740053502843,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 88
+        },
+        {
+          "ok": true,
+          "ms": 0.8109899936243892,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 89
+        },
+        {
+          "ok": true,
+          "ms": 0.5702490016119555,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 90
+        },
+        {
+          "ok": true,
+          "ms": 0.7942180091049522,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 91
+        },
+        {
+          "ok": true,
+          "ms": 0.7555159972980618,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 92
+        },
+        {
+          "ok": true,
+          "ms": 0.6652070005657151,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 93
+        },
+        {
+          "ok": true,
+          "ms": 0.9112779953284189,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 94
+        },
+        {
+          "ok": true,
+          "ms": 0.6361020059557632,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 95
+        },
+        {
+          "ok": true,
+          "ms": 0.6035109981894493,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 96
+        },
+        {
+          "ok": true,
+          "ms": 0.6268549914238974,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 97
+        },
+        {
+          "ok": true,
+          "ms": 0.650720001431182,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 98
+        },
+        {
+          "ok": true,
+          "ms": 0.6716189964208752,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 99
+        },
+        {
+          "ok": true,
+          "ms": 0.7063230004860088,
+          "status": "200",
+          "bytes": 73,
+          "connection": null,
+          "http_version": "1.1",
+          "connects": [],
+          "sample": 100
+        }
+      ]
+    }
+  }
+}

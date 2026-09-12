@@ -40,8 +40,10 @@ That is why the cache boundary matters. Organization Service caches the account 
 
 > LLM audit: integrated from INCOMING.md. This is a limitation note from the source project, not a guarantee about future implementations.
 
-The TTL-backed paths use 300 second expiry, but full invalidation is not implemented here. That is acceptable for this demo because the workload is mostly about generating and reading enough data to expose retrieval shape. In a production system that mutates account membership or capability grants constantly, invalidation would become part of the design, not a footnote.
+The TTL-backed paths use 300 second expiry, but full invalidation is not implemented here. That is acceptable for this demo because the workload is mostly about generating and reading enough data to expose retrieval shape.
 
-Previous: [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)  
-Next: [Part 5: Smart API's](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
+The missing mechanism is fairly trivial: when account membership or a capability grant is mutated, the owning service emits an event. A worker consumes that event and force-expires the affected cache entry, so the next read rebuilds it from the source of truth. In a production system where those records change constantly, that event-driven invalidation belongs in the design rather than in a footnote.
 
+## Measured Evidence
+
+The [application cache results](./graphql-auth-explosion-results#application-cache) show workload-specific gains. Inspect the [cold and warm organization traces](./graphql-auth-explosion-traces#organization-retrieval-with-cold-and-warm-redis) and the separate [MSP scale results](./graphql-auth-explosion-results#graphql-msp-scale).

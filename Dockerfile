@@ -1,7 +1,5 @@
-FROM node:20-alpine AS build
+FROM node:20-trixie AS build
 WORKDIR /app
-
-RUN apk add --no-cache git
 
 COPY package*.json ./
 RUN npm ci
@@ -9,7 +7,7 @@ RUN npm ci
 COPY . .
 RUN npm run docs:build
 
-FROM nginx:1.27-alpine AS runtime
+FROM nginx:trixie AS runtime
 COPY --from=build /app/docs/.vitepress/dist /usr/share/nginx/html
 
 EXPOSE 80

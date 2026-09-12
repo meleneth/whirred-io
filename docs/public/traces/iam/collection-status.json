@@ -1,0 +1,7 @@
+{
+  "completed_cases": 17,
+  "failed_cases": [
+    "auth-sparse-capabilities",
+    "retrieval-wide-serial"
+  ]
+}

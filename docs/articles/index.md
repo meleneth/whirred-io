@@ -1,7 +1,5 @@
 # Articles
 
-Working notes and case studies from building whirred.io systems.
-
 ## GraphQL Auth Explosion Case Study
 
 The main spine: what went wrong in a distributed IAM-style system, why authorization checks multiplied, and how the implementation changed under real load.
@@ -13,9 +11,7 @@ The main spine: what went wrong in a distributed IAM-style system, why authoriza
 - [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
 - [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
 - [Part 5: Smart APIs](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
-- [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)
-- [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)
-- [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
+- [Part 6: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader)
 - [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
 - [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
 

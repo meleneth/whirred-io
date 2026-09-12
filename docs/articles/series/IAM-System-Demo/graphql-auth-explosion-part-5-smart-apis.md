@@ -53,6 +53,6 @@ It is very common in this system to need to get the list of parent accounts for 
 
 In order to satisfy this request in the uncached case, Account service must ask Organization service for the account id's that are in the organization. OrganizatonService will cache these account_id's in it's own Redis server. These account id's are then fed into the CTE query, and just the accounts that are direct ancestors of the requested account are returned. This list is also cached in Redis, but in AccountService's version.
 
-Previous: [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)  
-Next: [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)
+## Measured Evidence
 
+The [hierarchy and batch results](./graphql-auth-explosion-results#hierarchy-traversal-and-smart-apis) measure avoided requests. Inspect the [eight individual hierarchy GETs and one batch POST](./graphql-auth-explosion-traces#eight-hierarchy-calls-or-one-batch) as complete interactive traces.

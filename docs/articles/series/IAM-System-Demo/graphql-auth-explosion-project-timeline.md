@@ -45,6 +45,5 @@ Story: the app is expanding its IAM model beyond users/accounts/orgs into groups
 This is the tuning phase: UUID array bind params, tracer fixes, an attempted “real async” pass, a primary-key correction and revert, POST span reshaping, and finally aggregated counts for accounts, users, and groups.
 Story: once the shape of the system is in place, the remaining work is about performance, tracing, and getting the query surfaces into a better final form.
 
-Previous: [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
 
 Back to: [Series Home](/articles/series/IAM-System-Demo/iam-system-demo)

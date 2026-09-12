@@ -4,10 +4,23 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
+  "runArgs": [
+    "--network=devastation"
+  ],
+  "mounts": [
+    "source=whirred-io-node-modules,target=/workspaces/whirred-io/node_modules,type=volume",
+    "source=/usr/local/share/ca-certificates/devastation-root-ca.crt,target=/usr/local/share/ca-certificates/devastation-root-ca.crt,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/devastation-root-ca.crt"
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "sudo chown node:node node_modules && npm ci && .devcontainer/start-vitepress.sh",
+  "appPort": [
+    "5173:5173"
+  ],
   "forwardPorts": [
     5173
   ],

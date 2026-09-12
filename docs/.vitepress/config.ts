@@ -20,15 +20,13 @@ const config = defineConfig({
         siteTitle: 'whirred.io',
         aside: false,
         nav: [
-            { text: 'Home', link: '/' },
-            { text: 'Articles', link: '/articles/' },
-            { text: 'Guide', link: '/guide/getting-started' }
+            { text: 'Articles', link: '/' }
         ],
         sidebar: [
             {
                 text: 'Articles',
                 items: [
-                    { text: 'All Articles', link: '/articles/' },
+                    { text: 'All Articles', link: '/' },
                     {
                         text: 'GraphQL Auth Explosion Case Study',
                         collapsed: false,
@@ -40,10 +38,11 @@ const config = defineConfig({
                             { text: 'Part 3: Multiple Object Authorization', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization' },
                             { text: 'Part 4: Redis Cache', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service' },
                             { text: 'Part 5: Smart APIs', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis' },
-                            { text: 'Part 6: Async MADNESS', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness' },
-                            { text: 'Part 7: GraphQL and Dataloader', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader' },
-                            { text: 'Part 8: Falcon', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon' },
+                            { text: 'Part 6: GraphQL and Dataloader', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader' },
                             { text: 'Conclusion', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion' },
+                            { text: 'Measured Results', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-results' },
+                            { text: 'Trace Gallery', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-traces' },
+                            { text: 'Future Explorations', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations' },
                             { text: 'Project Timeline', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline' }
                         ]
                     },
@@ -66,10 +65,6 @@ const config = defineConfig({
                         ]
                     }
                 ]
-            },
-            {
-                text: 'Guide',
-                items: [{ text: 'Getting Started', link: '/guide/getting-started' }]
             }
         ]
     },

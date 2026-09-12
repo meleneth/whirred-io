@@ -3,13 +3,16 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: waiting on reproducible retrieval-mode benchmark
->
-> Publication work is intentionally paused pending the experiment described in
-> `TODO_FOR_ARTICLE.md` in the `iam-system-demo` repository. The full-organization
-> User Management workload needs a runtime switch between serial, one-object-at-a-time
-> retrieval and batched collection retrieval so this article can compare the same
-> endpoint, fixture, authorization mode, and cache state.
+> Status: draft; reproducible retrieval-mode benchmark collected September 10, 2026.
+
+The [measured retrieval results](./graphql-auth-explosion-results#retrieval-and-authorization) now compare serial and batched modes with the same fixture, authorization mode, and cache state.
+
+| Deep fixture, capabilities mode, Redis disabled | Median seconds [minimum–maximum] | Outcome |
+| --- | ---: | --- |
+| Serial retrieval | 13.269 [12.315–15.346] | 3/3 succeeded |
+| Batched retrieval | 1.152 [1.142–1.673] | 3/3 succeeded |
+
+The ratio of medians is 11.5×. Wide serial retrieval failed with empty HTTP replies, so it is not a completed latency comparison. These retrieval traces are too large for the hosted gallery; the [eight-target hierarchy pair](./graphql-auth-explosion-traces#eight-hierarchy-calls-or-one-batch) illustrates batching at a different boundary.
 
 ## Multiple Object Retrieval
 
@@ -68,6 +71,3 @@ sequenceDiagram
 
   Note over UM,US: The caller supplies multiple account_id join keys,<br/>not a free-form search
 ```
-
-Previous: [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)  
-Next: [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)

@@ -5,29 +5,46 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-tl;dr: first, I spent A Long Time writing a scaffolding tool
+> LLM Disclaimer:
+> LLMs were used in the preparation of this article. The project, implementation, and conclusions are my own.
 
-In order to explore graphql and service oriented architecture at scale, I needed a playground.
+**tl;dr:** I spent a long time writing a scaffolding tool, then used it to make the boring first ten minutes of this experiment genuinely take ten minutes.
 
-Being able to run your entire setup in different environments forces you to be honest about a bunch of details and I had written the [Mobilis](https://github.com/meleneth/mobilis) project to scaffold service based architectures, so step one was using that to generate the layout.
+To explore GraphQL authorization in a service-oriented system, I needed more than a few isolated Rails applications. I needed a playground with separate services and databases, service discovery, messaging, observability, and enough environment configuration to run the whole thing consistently.
 
-I used the script at the end to do it.  
+I already had [Mobilis](https://github.com/meleneth/mobilis), a tool I wrote to scaffold service-based architectures. The script below describes the initial platform: which services exist, which infrastructure they depend on, and how they connect. Mobilis turned that description into the repository layout, Rails applications, Docker Compose configuration, environment files, and helper scripts.
 
-Mistakes were made.  Localstack instead of goaws, only having Redis for the authorization service, no Groups service are front of mind when thinking about them.  It did, however prove a fertile lab to find out where the holes in my understanding were.
+The useful part was not that it "designed a distributed system" for me. It did not. It gave me a repeatable baseline so I could spend the next hour testing authorization behavior instead of copying Compose fragments, allocating ports, and bootstrapping the same Rails conventions five times.
 
-[initial generated codebase](https://github.com/meleneth/iam-system-demo/tree/134a9a2e956438289680b489d9d047cd9988859a)
+The result is preserved as the [initial generated codebase](https://github.com/meleneth/iam-system-demo/tree/134a9a2e956438289680b489d9d047cd9988859a).
 
-So we got to skip-start to being able to blast code in, with a bunch of rails services, a deployment machinism via docker compose, and being able to run all environments at the same time due to non-conflicting ports throughout.
+## What the scaffold bought me
 
-A very useful detail of this abstraction is the dc_dev, dc_test, and dc_prod scripts that get generated.  They bundle up the long list of docker compose flags needed to use the system in different environments, and let you treat it as if it was a simple compose.yml
+The generated repository started with several concrete affordances:
 
-The complexity is needed because maintaining multiple environments worth of configs can be a very large pain.  The generated system has mutiple top level entry points for compose, and is built out of per-service includes in the top level *-compose.yml files.  We also have all the needed evironment variables in test.env, development.env, and production.env.
+- Each service had its own application and database configuration.
+- Docker Compose could start the platform as a connected system.
+- Ports were assigned consistently, so development, test, and production-shaped stacks could coexist without accidental conflicts.
+- Observability services were wired in from the beginning rather than postponed until debugging became painful.
+- Connections between applications and their dependencies were expressed once in the DSL and reflected in the generated environment.
 
-The trickies part is the per-env overrides.
+None of these tasks is individually difficult. Together, they create enough friction that it is tempting to simplify an experiment until it no longer resembles the system being investigated. Scaffolding made the more representative experiment cheap enough to try.
 
-we have *-overrides.yml files at the top level.  This was needed because in production, rails defaults to needing a full 4 different DB's not just one.
+## Making Compose usable
 
-We probably didn't need all the other databases - I'm pretty sure we only really used the dev env - but not needing it this time didn't really matter when the support came free on the thing I really wanted anyways - one command scaffold of my entire environment so I could start hacking
+One small feature did a disproportionate amount of work: the generated `dc_dev`, `dc_test`, and `dc_prod` scripts. Each script bundles the Compose files, overrides, and environment arguments for one environment. From the operator's perspective, a layered configuration behaves like a single `compose.yml`.
+
+Underneath those commands, the repository has top-level Compose entry points assembled from per-service includes, plus `development.env`, `test.env`, and `production.env`. Top-level `*-overrides.yml` files hold the differences that cannot be shared cleanly. Rails' production database layout, for example, may require more database roles than the development setup.
+
+That structure is more machinery than this particular experiment ultimately needed; most of the work happened in development. Its value was consistency. Once Mobilis knew how environments were composed, every generated platform got the same interface and I did not have to reconstruct the correct command each time.
+
+## What the scaffold did not buy me
+
+Fast generation also made it cheap to encode questionable decisions. I chose LocalStack where GoAWS may have been a better fit, attached Redis only to the authorization service, and omitted a dedicated Groups service. Those were real modeling mistakes, not generator failures.
+
+That distinction matters. A scaffold removes setup cost and makes conventions repeatable. It does not validate the architecture those conventions produce. In this project, the generated baseline was valuable precisely because it let me reach the interesting mistakes sooner, observe their consequences, and revise the system.
+
+Here is the input that produced that baseline:
 
 ```ruby
 #!/usr/bin/env ruby
@@ -211,5 +228,3 @@ end
 ## Related
 
 - [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
-
-Next: [ActiveResource and the Default Implementation that Astounded Me](/articles/series/IAM-System-Demo/dev-affordances-activeresource-default-implementation)

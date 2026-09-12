@@ -8,7 +8,7 @@
     "docs:dev": "vitepress dev docs --host 0.0.0.0 --port 5173",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs --host 0.0.0.0",
-    "docker:build": "docker build -t whirred-io:latest .",
+    "docker:build": "docker build --network host -t whirred-io:latest .",
     "docker:run": "docker run --rm -p 8080:80 whirred-io:latest"
   },
   "keywords": [

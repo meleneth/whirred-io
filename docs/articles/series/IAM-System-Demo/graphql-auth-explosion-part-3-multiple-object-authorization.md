@@ -105,5 +105,11 @@ sequenceDiagram
   AZ-->>S: 200 only if A, B, and C are all covered<br/>otherwise 403 for the complete collection
 ```
 
-Previous: [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)  
-Next: [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
+## Measured Evidence
+
+The [retrieval and authorization results](./graphql-auth-explosion-results#retrieval-and-authorization) distinguish successful capabilities-versus-`/can` comparisons from empty-HTTP-reply failures. These measurements do not replace the authorization semantics audit above.
+
+
+### Trace the Difference
+
+Compare [single-record `/can` with full capabilities](./graphql-auth-explosion-traces#single-record-can-versus-full-capabilities), then inspect [the collection call that repeats the hierarchy work](./graphql-auth-explosion-traces#full-capabilities-repeats-the-work-inside-a-collection). Each example includes an interactive browser for the complete selected subtree, with every descendant retained.

@@ -23,8 +23,12 @@ These are related to the IAM demo, but they are not numbered parts of the auth-e
 4. [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
 5. [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
 6. [Part 5: Smart API's](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
-7. [Part 6: Async MADNESS](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-async-madness)
-8. [Part 7: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-7-graphql-and-dataloader)
-9. [Part 8: Falcon](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-8-falcon)
-10. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
-11. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
+7. [Part 6: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader)
+8. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
+9. [Future Explorations](/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations)
+10. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
+
+
+## Measured Results and Traces
+
+The [September 2026 benchmark summary](./graphql-auth-explosion-results) includes timings, ranges, failures, and measurement limits. The [trace gallery](./graphql-auth-explosion-traces) pairs small examples with a full interactive waterfall for each trace.

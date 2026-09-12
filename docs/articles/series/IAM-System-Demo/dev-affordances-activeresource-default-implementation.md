@@ -109,6 +109,4 @@ def self.user_can(user_id, scope_type, permission, scope_id)
 end
 ```
 
-Previous: [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/dev-affordances-distributed-platform-in-10-minutes)
 
-Next: [Creating a Million Users](/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users)
