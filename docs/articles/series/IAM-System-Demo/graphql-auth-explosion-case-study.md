@@ -4,9 +4,6 @@ Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam
 
 > Status: Draft
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles.  For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
-
 
 ## Meet My Straw Men
 

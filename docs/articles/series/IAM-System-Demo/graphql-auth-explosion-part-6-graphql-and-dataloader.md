@@ -5,9 +5,6 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 > Status: waiting on Dataloader consistency audit; [trace evidence is available](./graphql-auth-explosion-traces#graphql-preserves-the-service-boundaries).
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles. For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
-
 ## GraphQL Is Where the N+1 Comes Back
 
 Everything up to this point can be implemented through REST APIs. Those APIs now accept collections: multiple Account IDs, multiple User `account_id` join keys, and multiple GroupUser `user_id` join keys.

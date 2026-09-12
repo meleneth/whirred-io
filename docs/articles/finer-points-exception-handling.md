@@ -1,8 +1,6 @@
 # Finer Points of Exception Handling
 
 > Status: draft
->
-> Disclosure: this article was substantially rewritten by AI from my notes because I wanted the idea clearer than I was getting it on the page. This blog is intended to be a mostly no-AI-slop zone, so this is called out explicitly.
 
 ## Or: This Pattern Will Eat Your Code Base
 

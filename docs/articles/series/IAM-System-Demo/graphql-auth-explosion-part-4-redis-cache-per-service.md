@@ -5,9 +5,6 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 > Status: ramblings
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles. For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
-
 ## Redis Cache, per service
 
 Each of the services that house objects has their own redis cache. These caches expire after 5 minutes, and we keep track of cache keys in a secondary key location such that if needed, specific caches could be expired when the data changes. This is not implemented, because we don't actually change data - we're just setting up having the data to be able to change it, actually changing it is out of scope.
@@ -16,7 +13,7 @@ Each system only caches it's own objects. Cacheing of objects on remote systems 
 
 ## Concrete Redis Shapes
 
-> LLM audit: integrated from INCOMING.md. Confirm the file paths and cache behavior against the original IAM demo repo before final publication.
+> Audit note: Confirm the file paths and cache behavior against the original IAM demo repo before final publication.
 
 There are two different Redis shapes doing different jobs. They should not be collapsed into one vague "we cache things" claim.
 
@@ -38,7 +35,7 @@ That is why the cache boundary matters. Organization Service caches the account 
 
 ## What Is Still Not Solved
 
-> LLM audit: integrated from INCOMING.md. This is a limitation note from the source project, not a guarantee about future implementations.
+> This is a limitation note from the source project, not a guarantee about future implementations.
 
 The TTL-backed paths use 300 second expiry, but full invalidation is not implemented here. That is acceptable for this demo because the workload is mostly about generating and reading enough data to expose retrieval shape.
 

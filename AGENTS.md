@@ -30,9 +30,9 @@ This repo is a VitePress documentation site. These notes are for Codex and other
 
 ## LLM-Generated Content Disclosure
 
-- If doing substantial new prose generation inside an article, add the site's LLM-generated warning text to that article.
-- Do not add the LLM-generated warning text for mechanical or structural edits, including creating new diagrams, adding Mermaid/table representations of existing material, fixing navigation, or expanding links from existing text.
-- When in doubt, treat "big content generation" as new authored article prose or a major rewrite that changes how the article argues, not cleanup or presentation work.
+- Keep the site's LLM disclosure at the top of `docs/index.md`.
+- Do not add per-article LLM disclaimers, including for substantial generation or rewrites. The front-page disclosure covers LLM assistance, generation, and the author's editorial responsibility.
+- Preserve substantive audit notes and limitations independently of the disclosure.
 
 ## Recommendations
 

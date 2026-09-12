@@ -5,9 +5,6 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 > Status: draft
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles. For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
-
 ## Async Loading in Smaller Batches
 
 One direction to explore is loading primary records in smaller batches so retrieval of secondary records can start as soon as the first batch arrives. Instead of waiting for the entire primary collection, we could collect the related ids from each batch and begin retrieving those records while subsequent primary batches are still loading.

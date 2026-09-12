@@ -4,8 +4,6 @@ Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
 > Status: ramblings
->
-> Disclosure: this article was substantially rewritten with AI from my notes and the working demo implementation.
 
 ## CTE
 

@@ -6,7 +6,7 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 > Status: draft
 
-> This timeline was extracted from the project Git history with LLM assistance.
+This timeline was extracted from the project Git history.
 
 All dates are 2025.
 

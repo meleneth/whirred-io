@@ -5,9 +5,6 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-> LLM Disclaimer:
-> LLMs were used in the preparation of this article. The project, implementation, and conclusions are my own.
-
 **tl;dr:** I spent a long time writing a scaffolding tool, then used it to make the boring first ten minutes of this experiment genuinely take ten minutes.
 
 To explore GraphQL authorization in a service-oriented system, I needed more than a few isolated Rails applications. I needed a playground with separate services and databases, service discovery, messaging, observability, and enough environment configuration to run the whole thing consistently.

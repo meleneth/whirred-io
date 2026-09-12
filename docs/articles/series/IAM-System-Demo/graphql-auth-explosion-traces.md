@@ -6,9 +6,6 @@ import TraceExample from '../../../.vitepress/theme/components/TraceExample.vue'
 
 Series: [GraphQL Auth Explosion Case Study](./iam-system-demo) · [Measured results](./graphql-auth-explosion-results)
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles. For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
-
 The User Management page needs every user from every account in an organization. A system built around one user working in one account now has to retrieve and authorize records across the whole account tree. These traces show how that change in workload multiplies service calls, and how the changes in the articles remove those multipliers.
 
 Follow the repeated calls in each comparison: walking parents, calculating capabilities for each account, and fetching related records. Batching has to survive every layer. One service looping over a collection can bring back the work that the caller just eliminated.

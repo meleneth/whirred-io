@@ -4,9 +4,6 @@ Series: [GraphQL Auth Explosion Case Study](./iam-system-demo)
 
 > Results collected September 10, 2026.
 
-LLM Disclaimer:
-LLM's were used in the preperation of this series of articles. For the most part I try to call out per-article if it is particularly LLM heavy, but for the most part I'm trying to keep it human-written and avoid triggering people.
-
 Browse the [selected interactive traces](./graphql-auth-explosion-traces) to inspect the request shapes behind these results.
 
 All 17 cases completed: both smoke gates and 13 measured cases passed; two measured cases failed. The strongest supported results are fewer hierarchy HTTP requests, faster batched deep retrieval, and substantially faster large MSP walks with Redis. Capabilities mode has workload-specific performance and reliability problems; it did not fail universally.
