@@ -2,7 +2,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { withBase } from 'vitepress'
 import catalog from '../data/iam-traces.json'
-import { buildTrace, visibleRows, durationLabel, serviceColor, beforeOutgoingRequest } from './traceModel.mjs'
+import { buildTrace, visibleRows, durationLabel, serviceColor } from './traceModel.mjs'
 
 const props = defineProps({ initialTrace: { type: String, default: '' }, embedded: Boolean })
 const active = ref(props.initialTrace || catalog[0].id)
@@ -20,7 +20,6 @@ const entry = computed(() => catalog.find(t => t.id === active.value))
 const rows = computed(() => model.value ? visibleRows(model.value, { collapsed: collapsed.value, query: query.value, service: service.value }) : [])
 const labelWidth = computed(() => Math.max(380, 200 + Math.max(0, ...rows.value.map(row => row.depth)) * 12))
 const detail = computed(() => model.value?.nodes.get(selected.value))
-const beforeRequest = computed(() => beforeOutgoingRequest(detail.value))
 function writeURL() {
   if (props.embedded) return
   const url = new URL(window.location.href)
@@ -78,23 +77,12 @@ onBeforeUnmount(() => { controller?.abort(); window.removeEventListener('popstat
     </label>
     <p v-if="entry"><a :href="withBase(entry.file)" download>Download {{ entry.kind === 'subtree' ? 'subtree' : 'complete' }} Jaeger JSON</a> · {{ (entry.bytes / 1000).toFixed(1) }} kB</p>
     <p v-if="entry?.kind === 'subtree'" class="trace-note"><strong>Complete subtree excerpt:</strong> {{ entry.spans }} of {{ entry.sourceSpans }} spans from the original trace. Every descendant of the selected root is included. Ancestors and sibling requests are omitted; original span IDs, times, tags and references are retained. The root's parent reference points outside this excerpt.</p>
-    <p v-if="entry?.sourceRequestOutcome === 'transport_error'" class="trace-note"><strong>Failed enclosing request:</strong> The source request ended with an empty HTTP reply (curl exit 52). This selected call recorded HTTP 200; its complete subtree is retained. This is not a successful full-request latency sample.</p>
+    <p v-if="entry?.sourceRequestOutcome === 'transport_error'" class="trace-note"><strong>Failed enclosing request:</strong> The source request ended with an empty HTTP reply (curl exit 52). The complete selected authorization subtree is retained; HTTP spans are not recorded. This is not a successful full-request latency sample.</p>
     <p v-if="loading" role="status">Loading trace…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load(active)">Retry</button></p>
     <template v-if="model">
       <p><strong>{{ model.nodes.size }} spans</strong> · {{ model.services.length }} services · {{ durationLabel(model.duration) }} elapsed span envelope</p>
       <p class="trace-note">Indentation shows parent/child nesting within this example. Bars share a relative time axis. Parent durations include children; overlapping spans are not additive. Search keeps ancestors visible. The span envelope can differ from benchmark HTTP timing.</p>
-      <section v-if="beforeRequest" class="trace-before" aria-label="Time before outgoing request">
-        <h2>Before the first outgoing HTTP request</h2>
-        <p>From <strong>{{ detail.operationName }}</strong> to the start of <code>http.request.write</code>: <strong>{{ durationLabel(beforeRequest.elapsed) }}</strong>.</p>
-        <p><strong>{{ durationLabel(beforeRequest.initialGap) }}</strong> before the first recorded child span; <strong>{{ durationLabel(beforeRequest.uncovered) }}</strong> in total without child-span coverage before the write. These are gaps in attribution, not measured CPU time or proof of a particular cause.</p>
-        <details><summary>Recorded work and events before the write</summary>
-          <table><thead><tr><th>From server start</th><th>Recorded work / event</th><th>Time before write</th></tr></thead>
-            <tbody><tr v-for="(milestone, i) in beforeRequest.milestones" :key="i"><td>+{{ durationLabel(milestone.offset) }}</td><td><button v-if="milestone.spanID" @click="selectSpan(milestone.spanID)">{{ milestone.name }}</button><span v-else>{{ milestone.name }}</span></td><td>{{ milestone.duration === null ? 'Event' : durationLabel(milestone.duration) }}</td></tr></tbody>
-          </table>
-        </details>
-        <p class="trace-note">Local spans and server events only. Nested durations overlap and must not be added. Spans are clipped at the first request-write start; that boundary is not a packet-level timestamp. Select another server span to inspect its outgoing request.</p>
-      </section>
       <div class="trace-controls">
         <label>Search spans and tags <input v-model="query" type="search" placeholder="e.g. /can, SELECT, graphql" /></label>
         <label>Service <select v-model="service" aria-label="Service"><option value="">All services</option><option v-for="name in model.services" :key="name">{{ name }}</option></select></label>

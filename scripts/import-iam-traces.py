@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTION = 'article-traces-20260912T001449Z'
+COLLECTION = 'article-traces-20260913T085755Z'
 SOURCE = Path(sys.argv[1]).expanduser() / 'reports/raw' / COLLECTION
 OUT = ROOT / 'docs/public/traces/iam'
 SELECTION = [
@@ -18,10 +18,10 @@ SELECTION = [
  ('graphql-cold', 'Deep GraphQL · cold Redis', 'graphql-cache-b1000/attempt-001/graphql-cold/trace.json'),
  ('graphql-warm', 'Deep GraphQL · warm Redis', 'graphql-cache-b1000/attempt-001/graphql-warm/trace.json'),
  ('graphql-msp', 'MSP GraphQL · warm page, batch 200', 'graphql-cache-b200/attempt-001/graphql-msp/trace.json'),
- ('authorization-record-capabilities', 'One account · full capabilities', 'retrieval-deep-serial/attempt-001/authorization-record-capabilities/trace.json', 'f36875c7d79292d1'),
- ('authorization-record-can', 'Same account · /can account.read', 'hierarchies-redis-off/attempt-001/authorization-record-can/trace.json', '501b3e45b87e446b'),
- ('authorization-collection-capabilities', 'Collection authorization · full capabilities', 'retrieval-wide-batched/attempt-001/authorization-collection-capabilities/trace.json', '43e60f70715b2628'),
- ('authorization-collection-can', 'Collection authorization · /can account.users.read', 'auth-wide-can/attempt-001/authorization-collection-can/trace.json', '03fea5bd8e2bc18f'),
+ ('authorization-record-capabilities', 'One account · full capabilities', 'retrieval-deep-serial/attempt-001/authorization-record-capabilities/trace.json', 'a94f02fc7565bba9'),
+ ('authorization-record-can', 'One account · /can account.read', 'hierarchies-redis-off/attempt-001/authorization-record-can/trace.json', '32321ad6873e5ac7'),
+ ('authorization-collection-capabilities', '19-account group membership authorization · full capabilities', 'retrieval-wide-batched/attempt-001/authorization-collection-capabilities/trace.json', '57ad2689b9f63e84'),
+ ('authorization-collection-can', '19-account group membership authorization · /can', 'auth-wide-can/attempt-001/authorization-collection-can/trace.json', '57038e3eb5ac7049'),
 ]
 INDEX = {entry['id']: entry for entry in json.loads((SOURCE / 'trace-index.json').read_text())}
 COLLECTION_METADATA = json.loads((SOURCE / 'collection.json').read_text())

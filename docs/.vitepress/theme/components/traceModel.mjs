@@ -53,36 +53,3 @@ export function serviceColor(name) {
   for (const char of name) hash = ((hash * 31) + char.charCodeAt(0)) >>> 0
   return `hsl(${hash % 360} 58% 45%)`
 }
-
-// Inspect local work before the first instrumented socket write. Union coverage
-// avoids counting nested client/connection/database spans more than once.
-export function beforeOutgoingRequest(root) {
-  if (!root || root.tagsByKey['span.kind'] !== 'server') return null
-  const local = []
-  const pending = [...root.children]
-  while (pending.length) {
-    const node = pending.pop()
-    if (node.processID !== root.processID || node.tagsByKey['span.kind'] === 'server') continue
-    local.push(node)
-    pending.push(...node.children)
-  }
-  const write = local.filter(n => n.operationName === 'http.request.write').sort((a, b) => a.startTime - b.startTime)[0]
-  if (!write) return null
-  const start = root.startTime, end = write.startTime
-  if (end < start) return null
-  const spans = local.filter(n => n.startTime < end && n.startTime + n.duration > start).sort((a, b) => a.startTime - b.startTime)
-  let cursor = start, covered = 0
-  for (const n of spans) {
-    const left = Math.max(start, n.startTime), right = Math.min(end, n.startTime + n.duration)
-    covered += Math.max(0, right - Math.max(cursor, left))
-    cursor = Math.max(cursor, right)
-  }
-  const milestones = spans.map(n => ({ name: n.operationName, offset: n.startTime - start, duration: Math.min(end, n.startTime + n.duration) - Math.max(start, n.startTime), spanID: n.spanID }))
-  for (const log of root.logs || []) {
-    const event = log.fields?.find(f => f.key === 'event')?.value
-    if (event && log.timestamp >= start && log.timestamp <= end) milestones.push({ name: event, offset: log.timestamp - start, duration: null })
-  }
-  milestones.push({ name: 'http.request.write begins', offset: end - start, duration: null, spanID: write.spanID })
-  milestones.sort((a, b) => a.offset - b.offset)
-  return { elapsed: end - start, initialGap: (spans[0]?.startTime ?? end) - start, uncovered: end - start - covered, milestones }
-}

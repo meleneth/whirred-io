@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, statSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { buildTrace, visibleRows, beforeOutgoingRequest } from '../docs/.vitepress/theme/components/traceModel.mjs'
+import { buildTrace, visibleRows } from '../docs/.vitepress/theme/components/traceModel.mjs'
 const span = (id, start, parent, overrides = {}) => ({ spanID: id, traceID: 'trace', operationName: id, startTime: start, duration: 10, processID: 'p', tags: [], references: parent ? [{ refType: 'CHILD_OF', traceID: 'trace', spanID: parent }] : [], ...overrides })
 const payload = spans => ({ data: [{ traceID: 'trace', spans, processes: { p: { serviceName: 'service' } } }] })
 test('child-before-parent ordering, multiple roots, orphan and cross-trace links remain navigable', () => {
@@ -40,22 +40,4 @@ test('all published traces retain full trees, match manifest hashes, and fit hos
   total += bytes.length
  }
  assert.ok(total < 4_000_000)
-})
-
-test('pre-request analysis unions overlapping spans and excludes downstream work', () => {
- const m = buildTrace(payload([
-  span('root', 0, null, { duration: 100, tags: [{ key: 'span.kind', value: 'server' }] }),
-  span('query', 20, 'root'),
-  span('http', 40, 'root', { duration: 50 }),
-  span('connect', 45, 'http', { duration: 10 }),
-  span('write', 60, 'http', { operationName: 'http.request.write' }),
-  span('remote', 5, 'root', { processID: 'remote', duration: 90 }),
-  span('remote-write', 6, 'remote', { processID: 'remote', operationName: 'http.request.write' })
- ]))
- const result = beforeOutgoingRequest(m.roots[0])
- assert.equal(result.elapsed, 60)
- assert.equal(result.initialGap, 20)
- assert.equal(result.uncovered, 30)
- assert.equal(beforeOutgoingRequest(m.nodes.get('query')), null)
- assert.ok(!result.milestones.some(n => n.spanID === 'remote'))
 })

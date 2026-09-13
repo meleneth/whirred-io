@@ -8,9 +8,9 @@ Series: [GraphQL Auth Explosion Case Study](./iam-system-demo) · [Measured resu
 
 The User Management page turns one account’s worth of work into an organization-wide query. Parent lookups, capability checks, and related-record retrieval all repeat across the account tree. The traces show where those loops cross service boundaries—and how collection APIs reduce the calls.
 
-The clearest example is authorization: one capabilities call makes **19 hierarchy requests and 19 membership requests**. The collection `/can` call makes **one of each**. Batching record retrieval alone leaves that authorization work inside the request.
+The clearest example is authorization: the selected 19-account group-membership authorization performs **19 capability computations and 19 membership lookups**. The matching collection `/can` authorization performs **one permission computation and one membership lookup**. Batching record retrieval alone leaves that authorization work inside the request.
 
-The waterfalls below are interactive, with request, SQL, and event details available on each span. They show individual requests from September 12, 2026; the [measured results](./graphql-auth-explosion-results) provide repeated timing comparisons from September 10.
+The waterfalls below are interactive, with authorization, cache, SQL, and event details available on each span. They show individual workloads from September 13, 2026; the [measured results](./graphql-auth-explosion-results) provide repeated timing comparisons from September 10.
 
 ## Single-record /can versus full capabilities
 
@@ -24,11 +24,11 @@ For one account, the two authorization paths look similar. The capabilities endp
 
 [Explore single-record /can](./graphql-auth-explosion-trace-browser?trace=authorization-record-can) · [Jaeger subtree JSON](/traces/iam/authorization-record-can.json)
 
-Both excerpts concern the same account and returned HTTP 200. They come from different workloads: the larger serial-retrieval request containing the capabilities call ultimately failed with an empty HTTP reply. Their durations therefore do not establish a speedup between the two approaches.
+These excerpts select one account computation from each workload; the reduced spans do not record account IDs, so they do not establish a same-account comparison. Both enclosing workloads completed successfully. HTTP status is recorded by the collection harness, while the spans show authorization work. Their durations do not establish a speedup between the two approaches.
 
 ## Full capabilities repeats the work inside a collection
 
-The difference becomes pronounced across a collection. The capabilities path resolves hierarchy and membership separately for each account: **19 requests to each service** within one authorization call. `/can` checks the permission across the requested accounts together, using **one hierarchy request and one membership request**.
+The difference becomes pronounced across a collection. Both excerpts show `GroupUser.collection.authorize` for 19 account scopes in the wide fixture. The capabilities subtree contains **19 account capability computations, 19 ancestry CTEs, and 19 organization-membership lookups**. The `/can` subtree contains **one 19-account permission computation, one ancestry CTE, and one membership lookup**. The SQL and application spans expose the repeated work without HTTP timing spans.
 
 <TraceExample id="authorization-collection-capabilities" />
 
@@ -40,7 +40,7 @@ The difference becomes pronounced across a collection. The capabilities path res
 
 The collection path removes repeated service calls, but its correctness remains under review in [Part 3: Multiple Object Authorization](./graphql-auth-explosion-part-3-multiple-object-authorization). The open audit covers downward grant inheritance and the requirement that every account pass authorization for the request to succeed.
 
-Both selected authorization calls returned HTTP 200. The enclosing capabilities request failed with an empty HTTP reply, while the `/can` workload completed. A separate [benchmark comparison in which both paths completed](./graphql-auth-explosion-results#retrieval-and-authorization) measured a 15.3× improvement for `/can` on the wide workload.
+Both selected authorization operations completed without a recorded exception. The enclosing wide capabilities request failed with an empty HTTP reply (curl 52), while the `/can` workload completed. The serial capabilities workload also completed in this refresh; its earlier failure did not recur. A separate [benchmark comparison in which both paths completed](./graphql-auth-explosion-results#retrieval-and-authorization) measured a 15.3× improvement for `/can` on the wide workload.
 
 ## Follow parents, or ask for the hierarchy
 
@@ -76,7 +76,7 @@ Redis is disabled in both examples. The reduction comes from batching the hierar
 
 ## Organization retrieval with cold and warm Redis
 
-Once retrieval and authorization operate on collections, caching can reduce the work that remains. Each service caches the data it owns: organization membership stays with Organization Service, and grants stay with Authorization Service. The caller still crosses those boundaries, but the owning service can reuse work from an earlier request.
+Once retrieval and authorization operate on collections, caching can reduce the work that remains. Each service caches derived results from data it owns: Organization Service caches membership expansion, Account Service caches ancestry, and Authorization Service caches capability lists and permission decisions. The caller still crosses those boundaries, but the owning service can reuse work from an earlier request.
 
 The cold request populates the caches; the warm request can reuse those entries. Both still perform authorization and retrieve records. Caching changes the work inside the owning services while preserving the caller’s service boundaries.
 
@@ -94,7 +94,7 @@ Both use the wide organization, batched `/can`, and batch size 1000. “Cold” 
 
 GraphQL lets the client ask for an organization, its accounts, their users, and those users' groups as one nested result. Those fields still depend on records owned by separate services. Resolving each field with an individual remote lookup would recreate the original explosion.
 
-The cold and warm traces contain batched downstream requests beneath GraphQL execution. Some calls still depend on earlier results: group membership must be retrieved before the group IDs are known. [Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader) collects keys within each stage, and its sources send those keys to the downstream APIs together.
+The cold and warm traces contain batched Dataloader operations with downstream authorization, SQL, and cache work beneath GraphQL execution. Some calls still depend on earlier results: group membership must be retrieved before the group IDs are known. [Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader) collects keys within each stage, and its sources send those keys to the downstream APIs together.
 
 <TraceExample id="graphql-cold" />
 
@@ -118,4 +118,4 @@ Across the complete walk, those page-level costs add up. The [batch-size benchma
 
 The gallery contains nine complete traces and four authorization excerpts. Each excerpt includes the selected call and its descendants. The [manifest](/traces/iam/manifest.json) records the source revision, request outcome, and export details; the linked JSON files contain the spans displayed here.
 
-Each waterfall has its own time scale, and parent durations include their children. Instrumentation changed between the September 10 benchmark and these September 12 samples, so span totals across the two collections are not directly comparable. Gaps between spans do not identify the cause of a delay.
+Each waterfall has its own time scale, and parent durations include their children. All seed queues were empty and all ten seed workers were stopped before collection. Controller/action, HTTP, response-lifecycle, serialization, and materialization spans are omitted at their source; cache operations remain. Cross-service trace propagation remains intact, and spans may share an external initiating parent because there is no Rack root. Instrumentation changed between the September 10 benchmark and these September 13 samples, so span totals across the collections are not directly comparable. Gaps between spans do not identify the cause of a delay.
