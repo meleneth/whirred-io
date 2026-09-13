@@ -18,9 +18,9 @@ for (const entry of catalog) {
   for (let parent = s.parent; parent; parent = parent.parent) depth++
   const x = 18 + depth * 10
   const maxChars = Math.max(6, Math.floor((402 - x) / 7))
-  const label = s.operationName.length > maxChars ? s.operationName.slice(0, maxChars - 1) + '…' : s.operationName
+  const label = s.displayName.length > maxChars ? s.displayName.slice(0, maxChars - 1) + '…' : s.displayName
   if (depth) parts.push(`<path d="M${x - 12} ${y - 22}V${y - 3}H${x - 3}" stroke="#61738c" fill="none"/>`)
-  parts.push(`<g data-span-id="${s.spanID}"><title>${escape(s.operationName)} · ${escape(s.service)} · +${escape(durationLabel(s.startTime - model.start))} · ${escape(durationLabel(s.duration))}</title><text x="${x}" y="${y}" font-size="12">${escape(label)}</text><text x="${x}" y="${y + 11}" font-size="9" fill="#aabbd0">${escape(s.service)} · ${escape(durationLabel(s.duration))}</text><rect x="${420 + 516 * (s.startTime - model.start) / model.duration}" y="${y - 8}" width="${Math.max(2, 516 * s.duration / model.duration)}" height="15" rx="2" fill="${serviceColor(s.service)}"/></g>`)
+  parts.push(`<g data-span-id="${s.spanID}"><title>${escape(s.displayName)} · ${escape(s.service)} · +${escape(durationLabel(s.startTime - model.start))} · ${escape(durationLabel(s.duration))}</title><text x="${x}" y="${y}" font-size="12">${escape(label)}</text><text x="${x}" y="${y + 11}" font-size="9" fill="#aabbd0">${escape(s.service)} · ${escape(durationLabel(s.duration))}</text><rect x="${420 + 516 * (s.startTime - model.start) / model.duration}" y="${y - 8}" width="${Math.max(2, 516 * s.duration / model.duration)}" height="15" rx="2" fill="${serviceColor(s.service)}"/></g>`)
  })
  parts.push('</g></svg>')
  writeFileSync(`docs/public/traces/iam/${entry.id}.svg`, parts.join('\n'))

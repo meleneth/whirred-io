@@ -10,7 +10,7 @@ The User Management page turns one account’s worth of work into an organizatio
 
 The clearest example is authorization: the selected 19-account group-membership authorization performs **19 capability computations and 19 membership lookups**. The matching collection `/can` authorization performs **one permission computation and one membership lookup**. Batching record retrieval alone leaves that authorization work inside the request.
 
-The waterfalls below are interactive, with authorization, cache, SQL, and event details available on each span. They show individual workloads from September 13, 2026; the [measured results](./graphql-auth-explosion-results) provide repeated timing comparisons from September 10.
+The waterfalls below are interactive, with HTTP/API calls, executed SQL, cache operations, and event details. These September 13, 2026 samples were measured after Rails workload warmup; the [measured results](./graphql-auth-explosion-results) provide repeated timing comparisons from September 10.
 
 ## Single-record /can versus full capabilities
 
@@ -24,11 +24,11 @@ For one account, the two authorization paths look similar. The capabilities endp
 
 [Explore single-record /can](./graphql-auth-explosion-trace-browser?trace=authorization-record-can) · [Jaeger subtree JSON](/traces/iam/authorization-record-can.json)
 
-These excerpts select one account computation from each workload; the reduced spans do not record account IDs, so they do not establish a same-account comparison. Both enclosing workloads completed successfully. HTTP status is recorded by the collection harness, while the spans show authorization work. Their durations do not establish a speedup between the two approaches.
+Both excerpts concern the same account, identified by `scope.id` in their span tags. Both enclosing workloads completed successfully after warmup. They come from different workloads, so their durations do not establish a controlled speedup between the two approaches. The viewer reports the enclosing client elapsed time separately from the selected subtree duration.
 
 ## Full capabilities repeats the work inside a collection
 
-The difference becomes pronounced across a collection. Both excerpts show `GroupUser.collection.authorize` for 19 account scopes in the wide fixture. The capabilities subtree contains **19 account capability computations, 19 ancestry CTEs, and 19 organization-membership lookups**. The `/can` subtree contains **one 19-account permission computation, one ancestry CTE, and one membership lookup**. The SQL and application spans expose the repeated work without HTTP timing spans.
+The difference becomes pronounced across a collection. Both excerpts show `GroupUser.collection.authorize` for the same group-membership lookup and 19 account scopes in the wide fixture. One `POST /capabilities/Account` causes **19 `POST /accounts_with_parents` calls and 19 `POST /organization_account_ids/for_account_ids` calls**. The corresponding `POST /can/Account/account.users.read` causes **one of each**. The traces retain those client and API-server spans, with the ancestry CTEs and membership queries beneath them.
 
 <TraceExample id="authorization-collection-capabilities" />
 
@@ -40,7 +40,7 @@ The difference becomes pronounced across a collection. Both excerpts show `Group
 
 The collection path removes repeated service calls, but its correctness remains under review in [Part 3: Multiple Object Authorization](./graphql-auth-explosion-part-3-multiple-object-authorization). The open audit covers downward grant inheritance and the requirement that every account pass authorization for the request to succeed.
 
-Both selected authorization operations completed without a recorded exception. The enclosing wide capabilities request failed with an empty HTTP reply (curl 52), while the `/can` workload completed. The serial capabilities workload also completed in this refresh; its earlier failure did not recur. A separate [benchmark comparison in which both paths completed](./graphql-auth-explosion-results#retrieval-and-authorization) measured a 15.3× improvement for `/can` on the wide workload.
+Both selected authorization operations completed without a recorded exception. After two warmup passes, the enclosing wide capabilities request still failed with an empty HTTP reply (curl 52), at 30.710 seconds until failure. The `/can` and serial capabilities workloads completed. The failed request is not a successful latency sample. A separate [benchmark comparison in which both paths completed](./graphql-auth-explosion-results#retrieval-and-authorization) measured a 15.3× improvement for `/can` on the wide workload.
 
 ## Follow parents, or ask for the hierarchy
 
@@ -94,7 +94,7 @@ Both use the wide organization, batched `/can`, and batch size 1000. “Cold” 
 
 GraphQL lets the client ask for an organization, its accounts, their users, and those users' groups as one nested result. Those fields still depend on records owned by separate services. Resolving each field with an individual remote lookup would recreate the original explosion.
 
-The cold and warm traces contain batched Dataloader operations with downstream authorization, SQL, and cache work beneath GraphQL execution. Some calls still depend on earlier results: group membership must be retrieved before the group IDs are known. [Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader) collects keys within each stage, and its sources send those keys to the downstream APIs together.
+The cold and warm traces contain batched Dataloader operations and their downstream HTTP/API calls, with authorization, executed SQL, and Redis work beneath them. Some calls still depend on earlier results: group membership must be retrieved before the group IDs are known. [Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader) collects keys within each stage, and its sources send those keys to the downstream APIs together.
 
 <TraceExample id="graphql-cold" />
 
@@ -118,4 +118,8 @@ Across the complete walk, those page-level costs add up. The [batch-size benchma
 
 The gallery contains nine complete traces and four authorization excerpts. Each excerpt includes the selected call and its descendants. The [manifest](/traces/iam/manifest.json) records the source revision, request outcome, and export details; the linked JSON files contain the spans displayed here.
 
-Each waterfall has its own time scale, and parent durations include their children. All seed queues were empty and all ten seed workers were stopped before collection. Controller/action, HTTP, response-lifecycle, serialization, and materialization spans are omitted at their source; cache operations remain. Cross-service trace propagation remains intact, and spans may share an external initiating parent because there is no Rack root. Instrumentation changed between the September 10 benchmark and these September 13 samples, so span totals across the collections are not directly comparable. Gaps between spans do not identify the cause of a delay.
+Each waterfall has its own time scale, and parent durations include their children. All ten seed workers remained stopped. Every profile received two workload warmup passes; Puma process identities remained unchanged from before warmup through the measured samples. Cold Redis samples flush only Redis DB 1. Rails is not restarted between warmup, cold Redis, and warm Redis, and PostgreSQL is neither restarted nor made cold.
+
+ActiveRecord's per-request query cache remains enabled. SQL spans show actual PostgreSQL executions, excluding cached results, schema introspection, and connection setup such as `SET`. Unused Solid Cache is removed. Controller/action, connection-phase, serialization, and materialization spans remain omitted; HTTP/API requests and application cache operations remain visible.
+
+The viewer labels HTTP spans with their endpoint paths and shows the actual SQL statement when a query span is selected. Trace envelopes and client elapsed times are reported separately. These warmed showcase timings do not replace the September 10 benchmark matrix, and span totals across the different instrumentation setups are not directly comparable.

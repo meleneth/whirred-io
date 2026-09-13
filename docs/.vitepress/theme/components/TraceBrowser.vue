@@ -77,11 +77,13 @@ onBeforeUnmount(() => { controller?.abort(); window.removeEventListener('popstat
     </label>
     <p v-if="entry"><a :href="withBase(entry.file)" download>Download {{ entry.kind === 'subtree' ? 'subtree' : 'complete' }} Jaeger JSON</a> · {{ (entry.bytes / 1000).toFixed(1) }} kB</p>
     <p v-if="entry?.kind === 'subtree'" class="trace-note"><strong>Complete subtree excerpt:</strong> {{ entry.spans }} of {{ entry.sourceSpans }} spans from the original trace. Every descendant of the selected root is included. Ancestors and sibling requests are omitted; original span IDs, times, tags and references are retained. The root's parent reference points outside this excerpt.</p>
-    <p v-if="entry?.sourceRequestOutcome === 'transport_error'" class="trace-note"><strong>Failed enclosing request:</strong> The source request ended with an empty HTTP reply (curl exit 52). The complete selected authorization subtree is retained; HTTP spans are not recorded. This is not a successful full-request latency sample.</p>
+    <p v-if="entry?.sourceRequestOutcome === 'transport_error'" class="trace-note"><strong>Failed enclosing request:</strong> The source request ended with an empty HTTP reply (curl exit 52). The complete selected authorization subtree is retained. This is not a successful full-request latency sample.</p>
     <p v-if="loading" role="status">Loading trace…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load(active)">Retry</button></p>
     <template v-if="model">
       <p><strong>{{ model.nodes.size }} spans</strong> · {{ model.services.length }} services · {{ durationLabel(model.duration) }} elapsed span envelope</p>
+      <p v-if="entry?.railsProcessesStable" class="trace-note">Measured after Rails workload warmup with unchanged server processes. ActiveRecord query caching remains enabled; Solid Cache is removed. Cold Redis examples clear only Redis.</p>
+      <p v-if="entry?.sourceClientElapsedSeconds != null" class="trace-note">{{ entry.kind === 'subtree' ? 'Enclosing workload' : 'Workload' }} client elapsed: <strong>{{ entry.sourceClientElapsedSeconds.toFixed(3) }} s</strong> · {{ entry.sourceHttpStatus ? `HTTP ${entry.sourceHttpStatus}` : entry.sourceRequestOutcome }}. {{ entry.kind === 'subtree' ? 'This is not the selected subtree duration.' : 'This includes time outside the recorded span envelope.' }}</p>
       <p class="trace-note">Indentation shows parent/child nesting within this example. Bars share a relative time axis. Parent durations include children; overlapping spans are not additive. Search keeps ancestors visible. The span envelope can differ from benchmark HTTP timing.</p>
       <div class="trace-controls">
         <label>Search spans and tags <input v-model="query" type="search" placeholder="e.g. /can, SELECT, graphql" /></label>
@@ -98,20 +100,21 @@ onBeforeUnmount(() => { controller?.abort(); window.removeEventListener('popstat
           <div class="trace-axis"><span>Operation / service</span><div><span>0</span><span>{{ durationLabel(model.duration / 2) }}</span><span>{{ durationLabel(model.duration) }}</span></div></div>
           <div v-for="{ node, depth } in rows" :key="node.spanID" class="trace-row" :data-depth="depth" :class="{ selected: node.spanID === selected }">
             <div class="trace-name" :style="{ paddingLeft: `${8 + depth * 12}px` }">
-              <button v-if="node.children.length" class="trace-toggle" :aria-expanded="!collapsed.has(node.spanID) || !!query || !!service" :aria-label="`Toggle children of ${node.operationName}`" @click="toggle(node.spanID)">{{ collapsed.has(node.spanID) && !query && !service ? '+' : '−' }}</button>
+              <button v-if="node.children.length" class="trace-toggle" :aria-expanded="!collapsed.has(node.spanID) || !!query || !!service" :aria-label="`Toggle children of ${node.displayName}`" @click="toggle(node.spanID)">{{ collapsed.has(node.spanID) && !query && !service ? '+' : '−' }}</button>
               <span v-else class="trace-leaf">·</span>
-              <button class="trace-operation" :title="`${node.service}: ${node.operationName}`" :aria-pressed="node.spanID === selected" @click="selectSpan(node.spanID)"><strong>{{ node.operationName }}</strong><small>{{ node.service }} · {{ durationLabel(node.duration) }}</small></button>
+              <button class="trace-operation" :title="`${node.service}: ${node.displayName}`" :aria-pressed="node.spanID === selected" @click="selectSpan(node.spanID)"><strong>{{ node.displayName }}</strong><small>{{ node.service }} · {{ durationLabel(node.duration) }}</small></button>
             </div>
-            <button class="trace-track" :aria-label="`Inspect ${node.operationName}, ${durationLabel(node.duration)}`" @click="selectSpan(node.spanID)"><span class="trace-bar" :style="{ background: serviceColor(node.service), left: `${100 * (node.startTime - model.start) / model.duration}%`, width: `${100 * node.duration / model.duration}%` }"></span></button>
+            <button class="trace-track" :aria-label="`Inspect ${node.displayName}, ${durationLabel(node.duration)}`" @click="selectSpan(node.spanID)"><span class="trace-bar" :style="{ background: serviceColor(node.service), left: `${100 * (node.startTime - model.start) / model.duration}%`, width: `${100 * node.duration / model.duration}%` }"></span></button>
           </div>
         </div>
       </div>
       <p v-if="!rows.length">No spans match these filters.</p>
       <section v-if="detail" class="trace-detail" aria-label="Selected span details">
-        <h2>Selected span: {{ detail.operationName }}</h2>
+        <h2>Selected span: {{ detail.displayName }}</h2>
         <p>{{ detail.service }} · starts +{{ durationLabel(detail.startTime - model.start) }} · duration {{ durationLabel(detail.duration) }}</p>
         <p><code>{{ detail.spanID }}</code> · <a :href="`${embedded ? './graphql-auth-explosion-trace-browser' : ''}?trace=${active}&span=${detail.spanID}`">Link to this span</a> · <button @click="focusSpan">Zoom to span</button></p>
-        <p v-if="detail.parent">Parent: <button @click="selectSpan(detail.parent.spanID)">{{ detail.parent.operationName }}</button></p>
+        <p v-if="detail.parent">Parent: <button @click="selectSpan(detail.parent.spanID)">{{ detail.parent.displayName }}</button></p>
+        <template v-if="detail.tagsByKey['db.statement']"><h3>SQL executed</h3><pre>{{ detail.tagsByKey['db.statement'] }}</pre></template>
         <table><thead><tr><th>Tag</th><th>Value</th></tr></thead><tbody><tr v-for="(tag, i) in detail.tags" :key="i"><td>{{ tag.key }}</td><td><code>{{ typeof tag.value === 'object' ? JSON.stringify(tag.value) : tag.value }}</code></td></tr></tbody></table>
         <details><summary>Logs, references, warnings and process metadata</summary><pre>{{ JSON.stringify({ logs: detail.logs, references: detail.references, warnings: detail.warnings, traceWarnings: model.trace.warnings, process: model.trace.processes?.[detail.processID] }, null, 2) }}</pre></details>
       </section>

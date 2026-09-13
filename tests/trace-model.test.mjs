@@ -41,3 +41,12 @@ test('all published traces retain full trees, match manifest hashes, and fit hos
  }
  assert.ok(total < 4_000_000)
 })
+
+test('HTTP labels expose the endpoint without changing the original span or query tags', () => {
+ const raw = span('request', 0, null, { operationName: 'HTTP GET', tags: [{ key: 'http.method', value: 'GET' }, { key: 'http.target', value: '/accounts.json?id[]=a' }] })
+ const m = buildTrace(payload([raw]))
+ assert.equal(m.roots[0].displayName, 'GET /accounts.json')
+ assert.equal(m.roots[0].operationName, 'HTTP GET')
+ assert.equal(m.roots[0].tagsByKey['http.target'], '/accounts.json?id[]=a')
+ assert.equal(raw.displayName, undefined)
+})

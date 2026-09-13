@@ -6,7 +6,9 @@ export function buildTrace(payload) {
   for (const span of trace.spans) {
     if (!span.spanID || nodes.has(span.spanID) || !Number.isFinite(span.startTime) || !Number.isFinite(span.duration) || span.duration < 0) throw new Error('Invalid or duplicate span.')
     const tags = Object.fromEntries((span.tags || []).map(t => [t.key, t.value]))
-    nodes.set(span.spanID, { ...span, service: trace.processes?.[span.processID]?.serviceName || 'Unknown service', tagsByKey: tags, children: [], parent: null })
+    const displayName = tags['http.method'] && tags['http.target']
+      ? `${tags['http.method']} ${String(tags['http.target']).split('?')[0]}` : span.operationName
+    nodes.set(span.spanID, { ...span, displayName, service: trace.processes?.[span.processID]?.serviceName || 'Unknown service', tagsByKey: tags, children: [], parent: null })
   }
   const roots = []
   for (const node of nodes.values()) {

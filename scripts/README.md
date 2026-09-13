@@ -12,12 +12,15 @@ node --test tests/trace-model.test.mjs
 npm run docs:build
 ```
 
-The importer lists exact files from the September 13 UTC refresh (`article-traces-20260913T085755Z`).
-Published JSON totals 911,335 bytes; each file remains under 1 MB. This collection removes controller/action,
-HTTP client/server and phase timings, Rack response lifecycle, serialization, and materialization spans at the source.
-SQL, Redis commands/pipelines, application cache operations, authorization computations, and GraphQL operations remain.
-The previous September 12 collection still included controller spans; the earlier README claim that it omitted them was incorrect.
-Cross-service propagation uses context-only Rack and Net::HTTP helpers. Multiple spans may share the external initiating parent.
+The importer selects `article-traces-20260913T094922Z`, collected from committed
+revision `232d52d` after rebuilding the service images. Published JSON totals 1,809,282 bytes.
+HTTP client spans cover direct Net::HTTP, Faraday, and ActiveResource calls, with API
+server spans and executed application SQL beneath them. Schema/setup queries, query-cache
+hits, controller/action, connect-only phases, serialization, and materialization spans are
+excluded at the source. Redis commands/pipelines and application cache operations remain.
+ActiveRecord per-request query caching remains enabled; Solid Cache is removed.
+The previous September 12 collection retained controller spans; the original README claim
+that it omitted them was incorrect. Earlier September 13 collections are superseded.
 Whole-trace sources must be under 1.5 MB. Four explicitly named authorization
 examples permit larger sources (under 180 MB) and extract a chosen root with every
 CHILD_OF descendant. Original span objects and root parent references are retained;
@@ -36,11 +39,22 @@ Its `trace` query parameter selects a manifest ID; `span` selects an exported sp
 ID. Unknown trace IDs produce a recoverable error. No arbitrary remote URLs are
 fetched and no server or external tracing service is required.
 
-The serial capabilities workload completed successfully. The wide capabilities workload returned an empty HTTP reply
-(curl 52); its selected 19-account group-membership authorization subtree completed without a recorded exception.
-The matching `/can` excerpt is also rooted at `GroupUser.collection.authorize` and checks 19 scopes. It contains one
-permission computation and one ancestry/membership lookup; the capabilities excerpt contains 19 of each.
-Single-account excerpts come from different workloads and do not establish identical account identity because those
-spans omit account IDs. The viewer labels the wide request failure. All ten seed workers were stopped and all five
-queues were empty before collection. The manifest records the base revision and complete working-tree patch hash;
-new helper files are included in that patch. Earlier benchmark timings are unchanged.
+Two workload warmup passes precede each profile's measurements. The importer verifies
+identical Puma PID/start-tick snapshots before warmup, after warmup, and after measurement.
+Cold Redis samples clear only Redis DB 1, without restarting Rails or PostgreSQL. All
+20 PostgreSQL instances retained their original process identities; all ten seed workers
+remained stopped. Client elapsed times and HTTP outcomes are included in both manifests.
+
+The serial capabilities request completed. The wide capabilities request still returned
+an empty reply (curl 52) after warming; the viewer labels it as failed. Its selected
+19-account group-membership authorization subtree completed, with 19 hierarchy and 19
+membership HTTP requests versus one of each under `/can`. Both excerpts authorize the
+same GroupUser lookup. Single-record excerpts now identify the same account through
+`scope.id`. Selected subtree durations remain separate from enclosing client elapsed time.
+The manifest's source-working-tree flag reflects the archived tracked patch; runtime code
+was committed before building, while unrelated untracked reports remained in the repo.
+The historical September 10 benchmark matrix is unchanged.
+
+HTTP display labels are derived from recorded method/path tags; raw operation names,
+queries, span objects, and export hashes remain intact. Selecting a SQL span displays its
+full `db.statement`. SVG previews use the same endpoint labels as the interactive viewer.
