@@ -6,17 +6,15 @@ import TraceExample from '../../../.vitepress/theme/components/TraceExample.vue'
 
 Series: [GraphQL Auth Explosion Case Study](./iam-system-demo) · [Measured results](./graphql-auth-explosion-results)
 
-The User Management page needs every user from every account in an organization. A system built around one user working in one account now has to retrieve and authorize records across the whole account tree. These traces show how that change in workload multiplies service calls, and how the changes in the articles remove those multipliers.
+The User Management page turns one account’s worth of work into an organization-wide query. Parent lookups, capability checks, and related-record retrieval all repeat across the account tree. The traces show where those loops cross service boundaries—and how collection APIs reduce the calls.
 
-Follow the repeated calls in each comparison: walking parents, calculating capabilities for each account, and fetching related records. Batching has to survive every layer. One service looping over a collection can bring back the work that the caller just eliminated.
+The clearest example is authorization: one capabilities call makes **19 hierarchy requests and 19 membership requests**. The collection `/can` call makes **one of each**. Batching record retrieval alone leaves that authorization work inside the request.
 
-Benchmarking and inspecting traces also exposed an IPv6 misconfiguration causing latency spikes. In this environment, the misconfiguration was having IPv6 enabled at all. That was a useful reminder to investigate the environment alongside the application: repeated work explained the authorization explosion, but it did not explain every delay.
-
-Each waterfall can be explored here or opened in the full browser. Select a span to inspect the request, SQL, or events behind it. Compare the calls and their nesting first; each waterfall has its own time scale. The [measured results](./graphql-auth-explosion-results) provide the repeated timing comparisons.
+The waterfalls below are interactive, with request, SQL, and event details available on each span. They show individual requests from September 12, 2026; the [measured results](./graphql-auth-explosion-results) provide repeated timing comparisons from September 10.
 
 ## Single-record /can versus full capabilities
 
-A full capability list makes sense when a user is working in one account: fetch the permissions once, then check whether the required permission is present. The first example shows that familiar operation. The second asks Authorization Service the narrower question directly: can this user read this account?
+For one account, the two authorization paths look similar. The capabilities endpoint returns the user’s full permission list, which the caller checks for the permission it needs. `/can` answers the specific permission question directly. Both still retrieve the account hierarchy and organization membership.
 
 <TraceExample id="authorization-record-capabilities" />
 
@@ -26,15 +24,11 @@ A full capability list makes sense when a user is working in one account: fetch 
 
 [Explore single-record /can](./graphql-auth-explosion-trace-browser?trace=authorization-record-can) · [Jaeger subtree JSON](/traces/iam/authorization-record-can.json)
 
-Both calls still need the account's hierarchy and organization membership to resolve authorization. Changing the question to `/can` does not make that underlying work disappear. With one account, the repetition that causes trouble in User Management is easy to miss. The next pair shows what happens when the question covers a collection.
-
-These excerpts concern the same account but come from different workloads, so they are not a controlled speed comparison. Both selected account requests returned HTTP 200; the larger serial-retrieval request containing the capabilities example failed with an empty HTTP reply.
+Both excerpts concern the same account and returned HTTP 200. They come from different workloads: the larger serial-retrieval request containing the capabilities call ultimately failed with an empty HTTP reply. Their durations therefore do not establish a speedup between the two approaches.
 
 ## Full capabilities repeats the work inside a collection
 
-Batching retrieval is only part of the fix. If authorization calculates a full capability list separately for every account in the result, it repeats hierarchy and membership work inside an apparently batched request.
-
-Look for that repetition in the first waterfall. Within this one authorization call, the capabilities path makes **19 hierarchy requests and 19 membership requests**. The `/can` path asks one permission question across the requested accounts and makes **one of each**.
+The difference becomes pronounced across a collection. The capabilities path resolves hierarchy and membership separately for each account: **19 requests to each service** within one authorization call. `/can` checks the permission across the requested accounts together, using **one hierarchy request and one membership request**.
 
 <TraceExample id="authorization-collection-capabilities" />
 
@@ -44,15 +38,15 @@ Look for that repetition in the first waterfall. Within this one authorization c
 
 [Explore collection /can](./graphql-auth-explosion-trace-browser?trace=authorization-collection-can) · [Jaeger subtree JSON](/traces/iam/authorization-collection-can.json)
 
-This is the multiplier described in [Part 3: Multiple Object Authorization](./graphql-auth-explosion-part-3-multiple-object-authorization). The intended rule is that every account must be authorized or the whole request fails. Checking the collection together has to preserve that rule and the downward inheritance of grants; the article's authorization audit remains open.
+The collection path removes repeated service calls, but its correctness remains under review in [Part 3: Multiple Object Authorization](./graphql-auth-explosion-part-3-multiple-object-authorization). The open audit covers downward grant inheritance and the requirement that every account pass authorization for the request to succeed.
 
-Both selected authorization calls returned HTTP 200, but the enclosing capabilities request failed with an empty HTTP reply while `/can` succeeded. The excerpts show repeated work, not a full-request speedup. The earlier benchmark has a separate [successful wide comparison](./graphql-auth-explosion-results#retrieval-and-authorization).
+Both selected authorization calls returned HTTP 200. The enclosing capabilities request failed with an empty HTTP reply, while the `/can` workload completed. A separate [benchmark comparison in which both paths completed](./graphql-auth-explosion-results#retrieval-and-authorization) measured a 15.3× improvement for `/can` on the wide workload.
 
 ## Follow parents, or ask for the hierarchy
 
 Authorization needs the target account and its direct ancestors. Following `account.parent` looks like ordinary model code, but here each step crosses the network. At depth five, the caller has to wait for five account requests in sequence.
 
-The hierarchy endpoint lets Account Service answer the whole question. A recursive CTE follows the parent links in its database and returns the lineage in one response. Compare the repeated account requests in the first trace with the single hierarchy request in the second.
+The hierarchy endpoint replaces those five requests with one. Account Service follows the parent links with a recursive CTE in its database and returns the complete lineage.
 
 <TraceExample id="hierarchy-walk" />
 
@@ -68,7 +62,7 @@ The hierarchy endpoint lets Account Service answer the whole question. A recursi
 
 Resolving a lineage in one request fixes the loop over parents. A caller asking about several accounts can still create another loop: one hierarchy request per target.
 
-These traces ask for the same eight targets. The first repeats the service path eight times. The second sends the targets together, so Account Service can resolve their lineages as a set. This is the next step in [Part 5: Smart APIs](./graphql-auth-explosion-part-5-smart-apis): expose the operation the caller needs across the collection.
+For the same eight targets, individual GETs repeat the service path eight times. One batch POST sends the targets together and lets Account Service resolve their lineages as a set—the collection API described in [Part 5: Smart APIs](./graphql-auth-explosion-part-5-smart-apis).
 
 <TraceExample id="hierarchy-individual" />
 
@@ -78,13 +72,13 @@ These traces ask for the same eight targets. The first repeats the service path 
 
 [Explore the batch POST](./graphql-auth-explosion-trace-browser?trace=hierarchy-batch) · [Jaeger JSON](/traces/iam/hierarchy-batch.json)
 
-Redis is disabled in both examples. This pair demonstrates hierarchy batching. [Part 2](./graphql-auth-explosion-part-2-multiple-object-retrieval) applies the same principle to retrieving records by IDs and join keys; its larger retrieval traces are not hosted here.
+Redis is disabled in both examples. The reduction comes from batching the hierarchy requests. [Part 2](./graphql-auth-explosion-part-2-multiple-object-retrieval) applies the same approach to retrieving records by IDs and join keys.
 
 ## Organization retrieval with cold and warm Redis
 
 Once retrieval and authorization operate on collections, caching can reduce the work that remains. Each service caches the data it owns: organization membership stays with Organization Service, and grants stay with Authorization Service. The caller still crosses those boundaries, but the owning service can reuse work from an earlier request.
 
-Compare the database work in these two organization requests. The cold request must populate caches; the warm request can use them. Search for `SELECT` and `PIPELINED` to follow the database queries and batched Redis checks. Authorization and record retrieval remain visible in both.
+The cold request populates the caches; the warm request can reuse those entries. Both still perform authorization and retrieve records. Caching changes the work inside the owning services while preserving the caller’s service boundaries.
 
 <TraceExample id="organization-cold" />
 
@@ -100,7 +94,7 @@ Both use the wide organization, batched `/can`, and batch size 1000. “Cold” 
 
 GraphQL lets the client ask for an organization, its accounts, their users, and those users' groups as one nested result. Those fields still depend on records owned by separate services. Resolving each field with an individual remote lookup would recreate the original explosion.
 
-[Part 6: GraphQL and Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader) explains how collected keys become batched downstream requests. Follow those requests beneath GraphQL execution in these cold and warm examples. Group membership has to be retrieved before the group IDs are known, so that dependency still requires successive stages. Dataloader can collect work within a stage; its source implementation must carry the batch across the service boundary.
+The cold and warm traces contain batched downstream requests beneath GraphQL execution. Some calls still depend on earlier results: group membership must be retrieved before the group IDs are known. [Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader) collects keys within each stage, and its sources send those keys to the downstream APIs together.
 
 <TraceExample id="graphql-cold" />
 
@@ -118,12 +112,10 @@ The final trace shows how the same work fits inside **one page** of a larger MSP
 
 [Explore the MSP page](./graphql-auth-explosion-trace-browser?trace=graphql-msp) · [Jaeger JSON](/traces/iam/graphql-msp.json)
 
-The [batch-size results](./graphql-auth-explosion-results#batch-boundaries) compare complete walks. This trace lets you inspect one page's service calls; it does not represent the time to retrieve the whole fixture.
+Across the complete walk, those page-level costs add up. The [batch-size benchmark](./graphql-auth-explosion-results#batch-boundaries) reduced the warm total from 10.264s for 50 pages to 2.135s for one larger page.
 
-## Selection and provenance
+## Trace context
 
-The gallery contains nine full traces and four authorization excerpts from the September 12, 2026 refresh. Each excerpt retains its selected call and every descendant; ancestors and sibling requests are omitted. Both capabilities excerpts come from failed enclosing requests, as described above.
+The gallery contains nine complete traces and four authorization excerpts. Each excerpt includes the selected call and its descendants. The [manifest](/traces/iam/manifest.json) records the source revision, request outcome, and export details; the linked JSON files contain the spans displayed here.
 
-These are individual samples. The benchmark medians come from the earlier September 10 collection. Parent durations include their children, and gaps between recorded spans do not identify what caused a delay. Instrumentation also changed between collections, so total span counts alone are not a measure of improvement.
-
-The [manifest](/traces/iam/manifest.json) records source paths, revisions, working-tree status, request outcomes, excerpt roots, and file hashes. Each example links to its Jaeger JSON and exposes its provenance in the browser. The exports can be reproduced with `scripts/import-iam-traces.py` and `scripts/render-trace-previews.mjs`.
+Each waterfall has its own time scale, and parent durations include their children. Instrumentation changed between the September 10 benchmark and these September 12 samples, so span totals across the two collections are not directly comparable. Gaps between spans do not identify the cause of a delay.
