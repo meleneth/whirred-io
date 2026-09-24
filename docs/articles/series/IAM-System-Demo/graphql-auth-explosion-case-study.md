@@ -15,21 +15,21 @@ Account service owns Accounts. Accounts have a name. Accounts also have a parent
 
 User service owns Users. A User stores an `account_id`, an email address, and other profile details. The `account_id` refers to an Account owned by Account service; User service does not own the Account record.
 
-Group service owns Groups and UserGroup membership records. A Group stores the `account_id` it belongs to, and a UserGroup stores the `user_id` and `group_id` that connect a User to a Group. Group service owns those relationships; User service does not store Groups on the User record.
+Group service owns Groups and GroupUser membership records. A Group stores the `account_id` it belongs to, and a GroupUser stores the `user_id` and `group_id` that connect a User to a Group. Group service owns those relationships; User service does not store Groups on the User record.
 
-Authorization service owns CapabilityGrants. A CapabilityGrant identifies a user, a permission, and the scope where the permission was granted. Authorization service exposes the `can` API used to ask whether a user may perform a specific action against a specific scope. User service does not store CapabilityGrants on the User record.
+Authorization service owns CapabilityGrants. A CapabilityGrant identifies a **Group**, a permission, and the Account, Group, or Organization scope where that permission was granted. Users receive grants through Group memberships; Authorization Service asks Group Service for the requesting actor's Group IDs before evaluating matching grants. It exposes the `can` API used to ask whether that actor may perform a specific action against a specific scope.
 
 We also have UserManagementService, which the user will send web requests to directly. We also eventually support GraphQL on this service.
 
-A tricky bit about this authorization system comes from the account hierarchy as defined by parent_account_id. If you have the capability grant anywhere in an account in your direct line of parent_account_id, you have the capability in the child account. This is useful for things like making sure the Admin for the Organization has full control for every account in the Organization.
+A tricky bit about this authorization system comes from the account hierarchy as defined by `parent_account_id`. If one of your Groups has a capability grant on an Account in the target's direct ancestor line, you have that capability on the descendant Account. MSP provider relationships add authorization-only edges between account trees without changing the physical parent hierarchy.
 
 ## How the System Works
 
-To set the stage for our code links, we are taking some shortcuts in the code base. We expect a pad-user-id header to be set for API calls, which marks the user id the request is being made on behalf of. This is a datacenter only header, you cannot pass it in from outside. If the header is sent with a value of IAM_SYSTEM, then authorization checks are omitted as the request is assumed to be internal to the IAM system itself. In a production environment, there would be a requirement that the IAM_SYSTEM requests would be signed with an IAM private key to verify origin.
+The demo expects a `pad-user-id` header on protected API calls. For ordinary work it contains the actor's User ID. `IAM_SYSTEM` marks allowlisted internal reads, while `IAM_SYSTEM_AUTH` is limited to the relationship lookups Authorization Service needs from Group and Organization services. These values are routing markers in this test system, not authenticated service identities. A production design would need a real workload-identity mechanism rather than trusting a header value.
 
 We use ActiveResource heavily in this implementation, to make remote objects feel like 'just another rails model'.
 
-An account-scoped record cannot be loaded from a service unless the requesting user has an explicit grant on the record's owning account or on an account in that account's direct lineage.
+An account-scoped record cannot be loaded from a service unless one of the requesting actor's Groups has the required grant on the record's owning Account, on a physical ancestor, or on an explicitly linked MSP provider scope.
 
 Direct lineage means one path through the account tree: start with the owning account, follow `parent_account_id` to its parent, and continue until reaching the top-level account. It includes the owning account and its ancestors. It does not include children, sibling branches, cousins, or every other account in the organization. A grant flows down that path from an ancestor to its descendants; it does not flow upward or sideways.
 
@@ -50,28 +50,35 @@ flowchart LR
 
   subgraph Data_Model[Data model]
     Account["Account<br/>id<br/>name<br/>parent_account_id"]
-    Organization["Organization<br/>id<br/>name"]
+    Organization["Organization<br/>id<br/>account_id<br/>name"]
     OrganizationAccounts["OrganizationAccounts<br/>id<br/>organization_id<br/>account_id"]
+    MspManagedOrganizations["MspManagedOrganizations<br/>id<br/>msp_organization_id<br/>msp_account_id<br/>client_organization_id"]
     User["User<br/>id<br/>email<br/>account_id"]
     Group["Group<br/>id<br/>name<br/>account_id"]
-    UserGroups["UserGroups<br/>id<br/>group_id<br/>user_id"]
-    CapabilityGrant["CapabilityGrant<br/>id<br/>user_id<br/>permissions<br/>scope_type<br/>scope_id"]
+    GroupUsers["GroupUsers<br/>id<br/>group_id<br/>user_id"]
+    CapabilityGrant["CapabilityGrant<br/>id<br/>group_id<br/>permission<br/>scope_type<br/>scope_id"]
   end
 
   Account -->|parent_account_id| Account
   OrganizationAccounts -->|account_id| Account
   OrganizationAccounts -->|organization_id| Organization
+  Organization -->|account_id| Account
+  MspManagedOrganizations -->|msp_organization_id| Organization
+  MspManagedOrganizations -->|client_organization_id| Organization
+  MspManagedOrganizations -->|msp_account_id| Account
   User -->|account_id| Account
   Group -->|account_id| Account
-  UserGroups -->|user_id| User
-  UserGroups -->|group_id| Group
+  GroupUsers -->|user_id| User
+  GroupUsers -->|group_id| Group
+  CapabilityGrant -->|group_id| Group
 
   UserService -. owns .-> User
   OrganizationService -. owns .-> Organization
   OrganizationService -. owns .-> OrganizationAccounts
+  OrganizationService -. owns .-> MspManagedOrganizations
   AccountService -. owns .-> Account
   GroupService -. owns .-> Group
-  GroupService -. owns .-> UserGroups
+  GroupService -. owns .-> GroupUsers
   AuthorizationService -. owns .-> CapabilityGrant
 
   UserManagementService --> UserService
@@ -82,10 +89,13 @@ flowchart LR
   AccountService --> AuthorizationService
   GroupService --> AuthorizationService
   OrganizationService --> AuthorizationService
+  AuthorizationService --> AccountService
+  AuthorizationService --> GroupService
+  AuthorizationService --> OrganizationService
 
   class UserManagementService,UserService,OrganizationService,AccountService,GroupService,AuthorizationService service
   class Account,Organization,User,Group,CapabilityGrant model
-  class OrganizationAccounts,UserGroups join
+  class OrganizationAccounts,MspManagedOrganizations,GroupUsers join
 ```
 
 ## Be Wildly Allergic to N+1
@@ -201,6 +211,7 @@ flowchart TB
     OrganizationService[Organization Service]
     Organizations[[organizations]]
     OrganizationAccounts[[organization_accounts]]
+    MspManagedOrganizations[[msp_managed_organizations]]
   end
 
   subgraph ACCT[Account Service]
@@ -216,7 +227,7 @@ flowchart TB
   subgraph GROUP[Group Service]
     GroupService[Group Service]
     Groups[[groups]]
-    UserGroups[[user_groups]]
+    GroupUsers[[group_users]]
   end
 
   subgraph AUTHZ[Authorization Service]
@@ -226,21 +237,25 @@ flowchart TB
 
   OrganizationService --> Organizations
   OrganizationService --> OrganizationAccounts
+  OrganizationService --> MspManagedOrganizations
   AccountService --> Accounts
   UserService --> Users
   GroupService --> Groups
-  GroupService --> UserGroups
+  GroupService --> GroupUsers
   AuthorizationService --> CapabilityGrants
 
   OrganizationAccounts -->|local FK: organization_id| Organizations
+  MspManagedOrganizations -->|local IDs: provider and client organizations| Organizations
   Accounts -->|local self FK: parent_account_id| Accounts
-  UserGroups -->|local FK: group_id| Groups
+  GroupUsers -->|local FK: group_id| Groups
 
   OrganizationAccounts -. cross-service id: account_id .-> Accounts
+  Organizations -. cross-service id: account_id .-> Accounts
+  MspManagedOrganizations -. cross-service id: msp_account_id .-> Accounts
   Users -. cross-service id: account_id .-> Accounts
   Groups -. cross-service id: account_id .-> Accounts
-  UserGroups -. cross-service id: user_id .-> Users
-  CapabilityGrants -. cross-service id: user_id .-> Users
+  GroupUsers -. cross-service id: user_id .-> Users
+  CapabilityGrants -. cross-service id: group_id .-> Groups
   CapabilityGrants -. cross-service scope_id .-> Accounts
   CapabilityGrants -. cross-service scope_id .-> Organizations
   CapabilityGrants -. cross-service scope_id .-> Groups
@@ -254,10 +269,13 @@ flowchart TB
   AccountService == authz call ==> AuthorizationService
   GroupService == authz call ==> AuthorizationService
   OrganizationService == authz call ==> AuthorizationService
+  AuthorizationService == relationship facts ==> GroupService
+  AuthorizationService == hierarchy facts ==> AccountService
+  AuthorizationService == provider facts ==> OrganizationService
 
   class UserManagementService,OrganizationService,AccountService,UserService,GroupService,AuthorizationService service
   class Organizations,Accounts,Users,Groups,CapabilityGrants table
-  class OrganizationAccounts,UserGroups join
+  class OrganizationAccounts,MspManagedOrganizations,GroupUsers join
   class UserManagementTables external
 ```
 
@@ -269,7 +287,17 @@ classDiagram
 
   class organization_service_organizations {
     uuid id PK
+    uuid account_id cross-service id
     string name
+    datetime created_at
+    datetime updated_at
+  }
+
+  class organization_service_msp_managed_organizations {
+    uuid id PK
+    uuid msp_organization_id local id
+    uuid msp_account_id cross-service id
+    uuid client_organization_id local unique id
     datetime created_at
     datetime updated_at
   }
@@ -306,7 +334,7 @@ classDiagram
     datetime updated_at
   }
 
-  class group_service_user_groups {
+  class group_service_group_users {
     uuid id PK
     uuid group_id local FK
     uuid user_id cross-service id
@@ -316,8 +344,8 @@ classDiagram
 
   class authorization_service_capability_grants {
     uuid id PK
-    uuid user_id cross-service id
-    string permissions
+    uuid group_id cross-service id
+    string permission
     string scope_type
     uuid scope_id cross-service id
     datetime created_at
@@ -325,14 +353,17 @@ classDiagram
   }
 
   organization_service_organization_accounts --> organization_service_organizations : local organization_id
+  organization_service_msp_managed_organizations --> organization_service_organizations : provider and client organization IDs
   account_service_accounts --> account_service_accounts : local parent_account_id
-  group_service_user_groups --> group_service_groups : local group_id
+  group_service_group_users --> group_service_groups : local group_id
 
   organization_service_organization_accounts ..> account_service_accounts : account_id reference
+  organization_service_organizations ..> account_service_accounts : account_id reference
+  organization_service_msp_managed_organizations ..> account_service_accounts : msp_account_id reference
   user_service_users ..> account_service_accounts : account_id reference
   group_service_groups ..> account_service_accounts : account_id reference
-  group_service_user_groups ..> user_service_users : user_id reference
-  authorization_service_capability_grants ..> user_service_users : user_id reference
+  group_service_group_users ..> user_service_users : user_id reference
+  authorization_service_capability_grants ..> group_service_groups : group_id reference
   authorization_service_capability_grants ..> account_service_accounts : scope_id when Account
   authorization_service_capability_grants ..> organization_service_organizations : scope_id when Organization
   authorization_service_capability_grants ..> group_service_groups : scope_id when Group
@@ -420,6 +451,8 @@ This case study sits alongside the [Developer Affordances](/articles/series/IAM-
 
 - [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/dev-affordances-distributed-platform-in-10-minutes)
 - [ActiveResource and the Default Implementation that Astounded Me](/articles/series/IAM-System-Demo/dev-affordances-activeresource-default-implementation)
+- [Explicit Authorization Contexts at the Model Boundary](/articles/series/IAM-System-Demo/dev-affordances-explicit-authorization-boundaries)
+- [Extracting Cross-Service Models into Shared Gems](/articles/series/IAM-System-Demo/dev-affordances-cross-service-resource-gems)
 - [Creating a Million Users](/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users)
 - [Devcontainers for Local Distributed Systems](/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems)
 - [Foreman for Local Process Orchestration](/articles/series/IAM-System-Demo/foreman-for-local-process-orchestration)

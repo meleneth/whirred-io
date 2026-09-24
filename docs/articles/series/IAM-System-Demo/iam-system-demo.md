@@ -2,7 +2,7 @@
 
 > Status: Draft
 
-IAM System Demo is the concrete distributed Rails system behind this case study: the scaffold, service boundaries, ActiveResource remote models, account hierarchy, GraphQL access patterns, authorization checks, caching, async retrieval, and the failure modes that show up when all of those pieces start talking to each other.
+IAM System Demo is the concrete distributed Rails system behind this case study: the scaffold, service boundaries, ActiveResource remote models, account hierarchy, Group-owned capability grants, GraphQL access patterns, authorization checks, caching, async retrieval, and the failure modes that show up when all of those pieces start talking to each other.
 
 ## Developer Affordances
 

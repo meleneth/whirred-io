@@ -17,8 +17,8 @@ the caller's responsibility. Enforcement belongs to the service that owns the
 records. The result is a model API that still feels familiar without hiding who
 is responsible for each authorization decision.
 
-This article describes the implementation at revision
-[`a2522eb`](https://github.com/meleneth/iam-system-demo/tree/a2522ebe229095ff50015e9cf0017dc8286b43e8).
+This article describes the implementation as organized at revision
+[`42f2ec4`](https://github.com/meleneth/iam-system-demo/tree/42f2ec4). The production trace collection was recorded from the immediately preceding behavior-equivalent revision, `4e00444`.
 
 ## The Boundary in One Picture
 
@@ -34,7 +34,7 @@ sequenceDiagram
   Entry->>Context: enter requesting-user scope
   Context->>Remote: Account.find / User.where / custom read
   Remote->>API: HTTP + fresh context headers
-  API->>Context: authenticate and reconstruct context
+  API->>Context: reconstruct actor context
   Context->>Model: materialize protected records
   Model->>Auth: one batched policy evaluation
   Auth-->>Model: allow or deny every target
@@ -51,10 +51,7 @@ not move the receiving service's policy into the caller.
 Normal user work begins inside a requesting-user context:
 
 ```ruby
-AuthorizationContext.as_requesting_user(
-  user_id: actor_id,
-  account_id: account_id
-) do
+AuthorizationContext.as_requesting_user(user_id: actor_id) do
   Account.find(account_id)
 end
 ```
@@ -62,19 +59,17 @@ end
 Narrow internal work uses a different authority:
 
 ```ruby
-AuthorizationContext.as_iam(
-  identity: "IAM_SYSTEM_AUTH",
-  originating_user_id: actor_id
-) do
+AuthorizationContext.as_iam(identity: "IAM_SYSTEM_AUTH") do
   RelationshipFact.find(...)
 end
 ```
 
-The distinction prevents a dangerous shortcut: a request that started as a
-real user cannot quietly become `IAM_SYSTEM` just because a downstream lookup
-is inconvenient. IAM scope represents authenticated service authority. The
-originating user remains available for attribution, but IAM scope does not
-stand in for that user's capabilities.
+The distinction makes a dangerous shortcut visible: a request that started as
+a real user must not become `IAM_SYSTEM` just because a downstream lookup is
+inconvenient. The current context contains exactly one `actor_id`; it does not
+carry an Account ID or an originating-user field alongside an IAM identity.
+Code that enters IAM scope has deliberately changed which actor marker it will
+send.
 
 The context is immutable and scoped to the block. Nested scopes restore the
 previous context even when the inner block raises. There is intentionally no
@@ -89,10 +84,12 @@ That failure happens before protected cache, SQL, or network access. Missing
 context is therefore an explicit programming error rather than an anonymous
 request that may or may not be rejected later.
 
-Rails controllers reconstruct the context from incoming headers around the
-request. IAM headers receive an additional check: the shared internal token
-must authenticate them. Sending `X-IAM-Authorization-Scope: iam` by itself does
-not create trusted authority.
+Rails controllers reconstruct the context from the incoming `pad-user-id`
+header around the request. The demo deliberately does **not** authenticate that
+header: `IAM_SYSTEM` and `IAM_SYSTEM_AUTH` are routing markers, not signed
+service identities. `IAM_SYSTEM_AUTH` is accepted only by narrow relationship-
+fact endpoints, but a production system would still need workload identity or
+signed requests before either marker could represent trusted authority.
 
 The implementation uses `ActiveSupport::IsolatedExecutionState`, but it does
 not pretend deferred work inherits the current scope. A thread, fiber, or job
@@ -179,9 +176,10 @@ end
 ```
 
 `target: :account_id` says that a User record is authorized against its owning
-Account. It is not proof supplied by the client. The receiving service first
-authenticates the propagated context, loads the records it owns, resolves their
-actual targets, and evaluates its own policy.
+Account. It is not proof supplied by the client. The receiving service
+reconstructs the propagated context, loads the records it owns, resolves their
+actual targets, and evaluates its own policy. In this demo that is authorization
+behavior, not caller authentication.
 
 The mechanism is uniform across services; the declarations retain the rules of
 each domain:
@@ -195,12 +193,19 @@ each domain:
 | Organization | `organization.read` on that Organization |
 | Organization membership | Either `organization.read.accounts` on the Organization or `account.read` on the member Account |
 | MSP-managed organization | `account.read` on the MSP/provider Account |
-| Capability grant | Authenticated `IAM_SYSTEM` access only |
+| Capability grant | Internal `IAM_SYSTEM` routing only; active grants belong to Groups |
 
-The current demo likewise reserves model mutations for authenticated
-`IAM_SYSTEM` work. Repeated capability requirements are alternatives, which is
+The current demo likewise reserves model mutations for `IAM_SYSTEM` work. That
+is an internal routing rule, not a cryptographic trust boundary. Repeated
+capability requirements are alternatives, which is
 why a Group may be visible through exact Group authority or through authority
 over its owning Account.
+
+For real actors, Authorization Service resolves explicit memberships from
+Group Service and evaluates the `capability_grants` belonging to those Groups.
+Account grants apply down physical parent chains and across explicit MSP
+provider relationships; Organization and exact-Group grants retain their own
+scope rules.
 
 These are the domain-specific parts of the design: which capability is needed,
 which scope type it applies to, which record field identifies that scope, and
@@ -275,6 +280,12 @@ That central code covers context lifecycle, transport safety, policy
 evaluation, batching, failure types, and telemetry once instead of making six
 services implement partial variations of them.
 
+A later refactor extracted the concrete remote Account, User, Group,
+membership, Organization, and grant clients into seven resource gems. That
+packaging step is covered in [Extracting Cross-Service Models into Shared
+Gems](./dev-affordances-cross-service-resource-gems); it preserves the boundary
+described here while removing service-local copies of each client contract.
+
 The largest reduction is in models because remote resources now mostly declare
 their transport while local models declare policy. Controllers no longer need
 to repeat record-by-record authorization machinery, and several proxy models
@@ -289,7 +300,9 @@ important gain is that the system now has answers to questions that were
 previously conventions:
 
 - Can protected work begin without an actor? No.
-- Can a caller declare itself to be IAM? Not without the internal credential.
+- Can this demo cryptographically prove a caller is IAM? No. The reserved
+  values are explicit routing markers, and production authentication remains
+  outside the demo.
 - Can identity leak through shared ActiveResource headers? Context headers are
   created per operation instead.
 - Does the calling service own downstream policy? No; it propagates authority.
@@ -308,9 +321,10 @@ the component that owns them.
 
 The boundary passed the shared client/server specs, affected service
 regression suites, live cross-service authorization checks, batching tests, and
-a real Puma/ActiveResource trace-propagation test. Eleven production trace
-scenarios completed successfully, including the wide organization response of
-251 Accounts, 5,020 Users, 502 Groups, and 5,271 memberships.
+a real Puma/ActiveResource trace-propagation test. The latest production gallery
+collection passed its authorization gates and exact response checks; the
+published wide request returned 251 Accounts, 5,020 Users, 502 Groups, and
+5,271 memberships.
 
 The production API still intentionally disables resource creation, update, and
 deletion routes. Mutation context propagation and model callbacks are covered
@@ -318,9 +332,9 @@ by boundary tests, but this demo has not added public write endpoints merely to
 claim an end-to-end mutation scenario.
 
 The source details live in the fixed-revision
-[`authorization-context`](https://github.com/meleneth/iam-system-demo/tree/a2522ebe229095ff50015e9cf0017dc8286b43e8/authorization-context)
+[`authorization-context`](https://github.com/meleneth/iam-system-demo/tree/42f2ec4/gems/authorization-context)
 and
-[`authorized-resource`](https://github.com/meleneth/iam-system-demo/tree/a2522ebe229095ff50015e9cf0017dc8286b43e8/authorized-resource)
+[`authorized-resource`](https://github.com/meleneth/iam-system-demo/tree/42f2ec4/gems/authorized-resource)
 gems. The [trace gallery](./graphql-auth-explosion-traces) shows the resulting
 request boundaries in complete workloads.
 

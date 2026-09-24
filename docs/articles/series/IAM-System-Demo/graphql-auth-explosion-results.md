@@ -44,7 +44,7 @@ The deep fixture contained 25 accounts and 500 users; wide contained 251 account
 | Sparse | Batched, capabilities | 3/3 empty HTTP replies | 94.901 [94.678–105.928] to failure |
 | Sparse | Batched, `/can` | 3/3 succeeded | 4.066 [3.910–4.802] |
 
-The completed deep comparison shows an **11.4×** lower median with batched retrieval. The wide and sparse capabilities failures cannot be used as completed latency comparisons against `/can`. All nine failing samples closed or timed out without returning an account collection. The collection did not establish the mechanism behind the empty replies. The `/can` measurements show successful requests at those sizes, subject to the [authorization semantics audit in Part 3](./graphql-auth-explosion-part-3-multiple-object-authorization).
+The completed deep comparison shows an **11.4×** lower median with batched retrieval. The wide and sparse capabilities failures cannot be used as completed latency comparisons against `/can`. All nine failing samples closed or timed out without returning an account collection. The collection did not establish the mechanism behind the empty replies. The `/can` measurements show successful requests at those sizes. The current group-based authorization semantics and their separate correctness coverage are described in [Part 3](./graphql-auth-explosion-part-3-multiple-object-authorization); this timing table is not itself authorization proof.
 
 ## Application cache
 

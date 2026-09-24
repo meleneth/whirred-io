@@ -1,6 +1,7 @@
 # GraphQL Auth Explosion Case Study, Part 2: Multiple Object Retrieval
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
+
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
 > Status: draft; retrieval-mode benchmark collected September 17, 2026.
@@ -16,7 +17,7 @@ The ratio of medians is 11.4×. Wide serial retrieval hit the 180-second client 
 
 ## Multiple Object Retrieval
 
-When fetching a large number of objects from a remote service, one at a time is a latency death sentence. We can provide an array of id's to be fetched, and reduce request latency overall. We started by implementing this at the REST request level, to get timings of improvements from OpenTelemetry in the Jaeger interface for viewing spans. It turns out, we can load up to 500 of these by providing an array of UUIDs with current system configuration.
+When fetching a large number of objects from a remote service, one at a time is a latency death sentence. We can provide an array of IDs and reduce request latency overall. The current resource clients use configurable chunks: `IAM_DEMO_BATCH_SIZE` defaults to 1,000 and accepts values from 1 through 10,000. OpenTelemetry traces keep each resulting HTTP request and owning-service query visible.
 
 ### One Object Per Request
 
@@ -47,7 +48,7 @@ sequenceDiagram
   participant AS as Account Service
   participant DB as Account Database
 
-  UM->>AS: GET /accounts?id[]=id1&id[]=id2&id[]=id3
+  UM->>AS: POST /accounts/search<br/>{ id: [id1, id2, id3] }
   AS->>DB: SELECT accounts WHERE id IN (...)
   DB-->>AS: account collection
   AS-->>UM: [account1, account2, account3, ...]
@@ -64,7 +65,7 @@ sequenceDiagram
   participant US as User Service
   participant DB as User Database
 
-  UM->>US: GET /users?account_id[]=account1&account_id[]=account2
+  UM->>US: POST /users/search<br/>{ account_id: [account1, account2] }
   US->>DB: SELECT users WHERE account_id IN (...)
   DB-->>US: users joined by account_id
   US-->>UM: [user1, user2, user3, ...]

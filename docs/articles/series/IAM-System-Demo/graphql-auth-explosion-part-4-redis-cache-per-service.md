@@ -1,46 +1,52 @@
-# GraphQL Auth Explosion Case Study, Part 4: Redis Cache, per service
+# GraphQL Auth Explosion Case Study, Part 4: Redis Cache, per Service
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
+
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: ramblings
+## Cache Derived Answers Where Their Facts Are Owned
 
-## Redis Cache, per service
+The current implementation has four application-level Redis key shapes across three services. They do different jobs:
 
-Each of the services that house objects has their own redis cache. These caches expire after 5 minutes, and we keep track of cache keys in a secondary key location such that if needed, specific caches could be expired when the data changes. This is not implemented, because we don't actually change data - we're just setting up having the data to be able to change it, actually changing it is out of scope.
+| Owner | Key shape | Cached answer |
+| --- | --- | --- |
+| Account Service | `account_with_parents:<account_id>` | One Account's physical hierarchy within its Organization |
+| Organization Service | `account_ids_by_organization:<organization_id>` | Account IDs belonging to one Organization |
+| Authorization Service | `group-grants-v2:can:<actor_id>:Account:<permission>:<account_id>` | One final Account permission decision |
+| Authorization Service | `group-grants-v2:capabilities:<actor_id>:<scope_type>:<scope_id>` | Effective capability names for one scope |
 
-Each system only caches it's own objects. Cacheing of objects on remote systems would make cache invalidation strategies difficult at best, so it is not allowed in the design.
+All four use a 300-second TTL. The Account, Organization, and Authorization services cache answers derived from facts they own or from authorization evaluation they are responsible for. User Management does not copy those remote records into a second source-of-truth cache.
 
-## Concrete Redis Shapes
+## Account hierarchies
 
-> Audit note: Confirm the file paths and cache behavior against the original IAM demo repo before final publication.
+Account Service reads hierarchy keys in a Redis pipeline. Misses are computed together with one set-shaped recursive SQL query, then written back in a pipeline. The cached value contains the client Account and its physical ancestors; it does not splice an MSP provider Account into the returned hierarchy.
 
-There are two different Redis shapes doing different jobs. They should not be collapsed into one vague "we cache things" claim.
+Account Service also records each hierarchy key in `org_cachekeys:<organization_id>`. That secondary set identifies the hierarchy entries affected by an Organization, but the demo does not currently expose a general mutation path that consumes the set to invalidate them.
 
-Organization Service caches organization membership expansion. In the actual project, the hot path is [`organization-service/app/controllers/organization_accounts_controller.rb`](https://github.com/meleneth/iam-system-demo/blob/main/organization-service/app/controllers/organization_accounts_controller.rb), especially the `for_account` flow. After validating the caller and checking authorization, the service resolves the organization/account relationship and then looks for a Redis key shaped like this:
+This cache removes repeated recursive-query work. It does not remove authorization: the service still evaluates the actor against the requested and returned Accounts before disclosing the hierarchy.
 
-`account_ids_by_organization:<organization_id>`
+## Organization membership
 
-On a miss, it derives the account id list from the organization relationship, stores the JSON payload, and sets a 300 second TTL. That makes repeated organization summary requests reuse the same membership expansion instead of repeatedly walking the database relationship.
+Organization Service caches the Account ID list for each Organization under `account_ids_by_organization:<organization_id>`. Batched requests pipeline the reads, query all missed Organizations as a set, and pipeline the writes.
 
-Authorization Service uses Redis differently. It caches grants as a set of allowed scope ids per user and permission, with keys shaped like this:
+The cached list is a relationship fact, not proof that a caller may see it. Organization Service still applies its model policy to the requested Organization contexts. MSP provider relationships remain in the service's `msp_managed_organizations` table and are resolved through the narrow authorization-context endpoint; they are not inferred from this cache key.
 
-`user_grants:<user_id>:<permission>`
+## Group-based authorization decisions
 
-On a miss, [`authorization-service/lib/authorization/account_grant_checker.rb`](https://github.com/meleneth/iam-system-demo/blob/main/authorization-service/lib/authorization/account_grant_checker.rb) loads matching `CapabilityGrant` rows from the database, stores the scope ids in the Redis set, and expires the set after 300 seconds. The common path then becomes set membership instead of another relational query.
+Authorization Service no longer caches a set named `user_grants`. Active `capability_grants` belong to Groups, and the service resolves the actor's explicit Group memberships before matching grants.
 
-The important detail is that authorization checks are batched at the Redis protocol level. The checker pipelines many `SISMEMBER` checks together, so a list of account ids does not become one Redis round trip per account.
+For `/can` Account checks, the service pipelines final decisions using keys that include actor, scope type, permission, and target Account. Cache misses trigger the authoritative work: Group membership lookup, physical Account hierarchy retrieval, MSP provider-edge lookup, and matching Group-grant query. Both positive and negative results are cached.
 
-That is why the cache boundary matters. Organization Service caches the account ids it owns through organization membership. Authorization Service caches the grants it owns as permission sets. Neither service has to cache the other service's objects to make the request faster.
+The full-capabilities API uses a separate key containing actor, scope type, and scope ID. Redis failures are treated as cache misses or skipped writes; they do not replace the authoritative permission calculation. Failures to retrieve actual Group, hierarchy, or provider facts still fail the request.
 
-## What Is Still Not Solved
+The `group-grants-v2` namespace is intentional. Changing authorization semantics required a new prefix so answers computed by the superseded resolver could not survive into the corrected model.
 
-> This is a limitation note from the source project, not a guarantee about future implementations.
+## Consistency limits
 
-The TTL-backed paths use 300 second expiry, but full invalidation is not implemented here. That is acceptable for this demo because the workload is mostly about generating and reading enough data to expose retrieval shape.
+These TTLs are not an immediate-revocation protocol. A removed membership, grant, provider relationship, or changed parent can remain represented by a cached derived answer until expiry. Layered caches can also make externally edited data take longer than one five-minute window to propagate through every derived result.
 
-The missing mechanism is fairly trivial: when account membership or a capability grant is mutated, the owning service emits an event. A worker consumes that event and force-expires the affected cache entry, so the next read rebuilds it from the source of truth. In a production system where those records change constantly, that event-driven invalidation belongs in the design rather than in a footnote.
+The demo's measured workload is create-then-read and does not implement a supported general mutation/invalidation workflow. A production design would need coordinated invalidation or versioning for the affected owner caches and Authorization Service's derived decisions. It would also need to define failure behavior when invalidation delivery is delayed.
 
-## Measured Evidence
+## Measured evidence
 
-The [application cache results](./graphql-auth-explosion-results#application-cache) show workload-specific gains. Inspect the [cold and warm organization traces](./graphql-auth-explosion-traces#organization-retrieval-with-cold-and-warm-redis) and the separate [MSP scale results](./graphql-auth-explosion-results#graphql-msp-scale).
+The [application cache results](./graphql-auth-explosion-results#application-cache) show modest cold-versus-warm gains on the wide and dense Organization walks. The [cold and warm organization traces](./graphql-auth-explosion-traces#organization-retrieval-with-cold-and-warm-redis) make the current Redis pipelines and the authorization work around them visible. The separate [MSP scale results](./graphql-auth-explosion-results#graphql-msp-scale) show how those effects accumulate over paginated GraphQL walks.

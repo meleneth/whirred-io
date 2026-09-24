@@ -8,7 +8,8 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 This timeline was extracted from the project Git history.
 
-All dates are 2025.
+The initial build dates are 2025. The publication-oriented correctness,
+benchmark, and shared-gem work resumed in September 2026.
 
 ## July 13–14: Bootstrapping the Service Skeleton
 
@@ -44,6 +45,40 @@ Story: the app is expanding its IAM model beyond users/accounts/orgs into groups
 
 This is the tuning phase: UUID array bind params, tracer fixes, an attempted “real async” pass, a primary-key correction and revert, POST span reshaping, and finally aggregated counts for accounts, users, and groups.
 Story: once the shape of the system is in place, the remaining work is about performance, tracing, and getting the query surfaces into a better final form.
+
+## September 2026: Correct the Authorization Model
+
+The publication audit exposed authorization rules that were inconsistent
+across single records, collections, hierarchy responses, GraphQL fields, and
+MSP pages. The implementation was brought back to explicit invariants:
+all-or-nothing collections, downward-only physical Account inheritance,
+authorization-only MSP provider edges, and policy enforcement in the service
+that owns each record.
+
+Capability grants moved from Users to Groups. Authorization Service now asks
+Group Service for an actor's explicit memberships and evaluates the grants
+owned by those Groups. Organization and Group grants retain exact scopes;
+ordinary Account capabilities cover physical descendants and explicitly linked
+MSP clients. There is no implicit MSP role or provider-membership allow.
+
+## September 17, 2026: Collect the Full Benchmark
+
+The production-shaped 17-case matrix recorded hierarchy, retrieval,
+authorization, cache, and GraphQL comparisons with explicit response and trace
+failures. Those results remain tied to revision `21f58d0`; failed requests are
+reported as failures instead of being turned into latency wins.
+
+## September 21–24, 2026: Make the Boundaries Explicit
+
+`AuthorizationContext`, `AuthorizedResource`, and `AuthorizedModel` made actor
+propagation and owning-service enforcement shared behavior. The context was
+then reduced to one actor ID, and mixed batched authorization regained its
+all-or-nothing contract.
+
+Finally, seven concrete cross-service models moved into resource gems and all
+local gems were organized under `gems/`. A clean production trace collection
+at revision `4e00444` verified the refactored request paths; revision `42f2ec4`
+then reorganized the packages without changing behavior.
 
 
 Back to: [Series Home](/articles/series/IAM-System-Demo/iam-system-demo)

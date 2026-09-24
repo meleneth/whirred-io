@@ -56,7 +56,7 @@ Each membership contains a Group ID, but authorization needs the **owning Accoun
 
 Two other group reads serve different purposes. Authorization Service calls `/internal/auth/memberships` to find **the actor's** Group IDs for grant lookup. Later, `Load 502 groups` fetches full Group records for the User Management response. The trace's `SQL Group Pluck` and `SQL Group Load` show the authorization lookup and response retrieval separately.
 
-The archived *full-capabilities* request over this fixture is too large for useful live browsing: it has 84,519 spans and ended with an empty HTTP reply after 89.648 seconds. The successful collection `/can` request preserves the work as sets and makes the shared resource and model authorization boundaries visible. That is a structural observation, not a successful latency comparison; the trace does not establish why the capabilities connection closed. [Part 3](./graphql-auth-explosion-part-3-multiple-object-authorization) explains the permission question and remaining correctness audit.
+The archived *full-capabilities* request over this fixture is too large for useful live browsing: it has 84,519 spans and ended with an empty HTTP reply after 89.648 seconds. The successful collection `/can` request preserves the work as sets and makes the shared resource and model authorization boundaries visible. That is a structural observation, not a successful latency comparison; the trace does not establish why the capabilities connection closed. [Part 3](./graphql-auth-explosion-part-3-multiple-object-authorization) explains the permission question and the separate correctness evidence.
 
 ## Organization retrieval with cold and warm Redis
 
@@ -74,7 +74,7 @@ Only Redis was reset between cache states. Rails processes stayed running, and P
 <TraceExample id="graphql-cold" description="One complete GraphQL request for the 25-Account deep chain after Redis is cleared. Follow batched Dataloader stages into the owning services." />
 <TraceExample id="graphql-warm" description="The same GraphQL query after cache priming. Service boundaries remain even when cache reads shorten parts of the request." />
 
-Dataloader combines keys available in one stage. It must fetch memberships before it knows which Group IDs to request, so the Group lookup follows in another stage. [Part 6](./graphql-auth-explosion-part-6-graphql-and-dataloader) discusses that dependency and the remaining consistency audit. These deep-fixture traces and the wide-organization traces above use different datasets, so their elapsed times do not form a REST-versus-GraphQL comparison.
+Dataloader combines keys available in one stage. It must fetch memberships before it knows which Group IDs to request, so the Group lookup follows in another stage. [Part 6](./graphql-auth-explosion-part-6-graphql-and-dataloader) discusses that dependency and the checks that preserve actor, ordering, and empty results. These deep-fixture traces and the wide-organization traces above use different datasets, so their elapsed times do not form a REST-versus-GraphQL comparison.
 
 ### One MSP page
 

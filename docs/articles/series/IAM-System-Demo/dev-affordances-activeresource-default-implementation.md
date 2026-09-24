@@ -1,6 +1,7 @@
 # ActiveResource and the Default Implementation that Astounded Me
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
+
 Section: Developer Affordances
 
 > Status: Draft
@@ -64,7 +65,7 @@ class OrganizationAccountsController < ApplicationController
     filters = params.slice(*OrganizationAccount.allowed_filters).permit!
     raise BadFilterError unless filters.present?
 
-    results = OrganizationAccount.where(*filters)
+    results = OrganizationAccount.where(filters)
     render json: results
   end
 end
@@ -92,21 +93,34 @@ accounts_to_load = [
 accounts = Account.find(:all, params: { id: accounts_to_load })
 ```
 
-If you need to encode array-style params via Faraday, it can be done like this:
+As the system grew, the collection-heavy paths moved to explicit JSON search
+endpoints rather than long array query strings. The shared remote contract now
+wraps that custom POST in an authorization-aware operation:
 
 ```ruby
-def self.user_can(user_id, scope_type, permission, scope_id)
-  scope_ids = Array(scope_id)
-  query_string = URI.encode_www_form(scope_ids.map { |id| ["scope_id[]", id] })
-
-  url = "#{Env::AUTHORIZATION_SERVICE_API_BASE_URL}/can/#{scope_type}/#{permission}?#{query_string}"
-
-  response = Faraday.get(url) do |req|
-    req.headers["pad-user-id"] = user_id
+class User < AuthorizedResource::Base
+  def self.search(params)
+    authorized_read("search") do
+      raw = connection.post(
+        "/users/search",
+        params.to_json,
+        headers.merge("Content-Type" => "application/json")
+      )
+      ActiveSupport::JSON.decode(raw.body).map { |attributes| new(attributes) }
+    end
   end
-
-  response.status == 200
 end
 ```
 
+The caller enters `AuthorizationContext.as_requesting_user` once. The resource
+builds a fresh `pad-user-id` header for the request, while User Service owns the
+`account.users.read` decision for the returned records. The remote model does
+not make its own duplicate `/can` call.
+
+The original service-local ActiveResource classes have since become small
+shared resource gems. [Explicit Authorization Contexts at the Model
+Boundary](./dev-affordances-explicit-authorization-boundaries) explains the
+transport/enforcement split, and [Extracting Cross-Service Models into Shared
+Gems](./dev-affordances-cross-service-resource-gems) covers that packaging
+refactor.
 

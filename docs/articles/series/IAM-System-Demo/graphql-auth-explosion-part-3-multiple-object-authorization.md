@@ -1,37 +1,35 @@
 # GraphQL Auth Explosion Case Study, Part 3: Multiple Object Authorization
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
-Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
 
-> Status: waiting on authorization implementation audit
->
-> Publication work is intentionally paused pending the Part 3 audit in
-> `TODO_FOR_ARTICLE.md` in the `iam-system-demo` repository. The current set-based
-> multi-account authorization path must be checked against the intended downward-only
-> inheritance and all-or-nothing collection semantics before it is presented as
-> the finished solution.
+Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
 ## Multiple Object Authorization
 
-Object retrieval fans out to Authorization checks. At each service level, an array of objects is being requested, and the entire request should fail if Authorization is missing for any of those objects. In our example system, Authorization is cumulative per parent account - if you have permission to the parent account, you have permission to the child account. The Authorization service supports a 'can' endpoint, to check if a given user has a specific permission for a type of object.
+Object retrieval fans out to authorization checks. At each service level, an array of objects is being requested, and the entire request should fail if authorization is missing for any of those objects. In this system, users receive permissions through explicit Group memberships. An Account-scoped grant belonging to one of those Groups applies to that Account and its descendants. Authorization Service's `/can` endpoint answers one permission question for a complete set of targets.
 
-These are individual-level grants, not a collection of all the grants a user has.
+The active grants are **Group-owned**, not user-owned. The actor's User ID still identifies the request, but Authorization Service first asks Group Service for that actor's Group IDs and then evaluates grants belonging to those Groups.
 
 ### The Single-Context Capability Shape
 
 In a normal, non-User-Management product request, the user operates inside one
-account context. The calling service asks for that user's complete capability
-list for the account, then checks the returned array for the capability it
-needs. Because the request concerns one user and one account, the response is
-bounded:
+account context. In the optional full-capabilities mode, the calling service
+asks for the actor's complete effective capability list for the account, then
+checks the returned array for the capability it needs. Authorization Service
+derives that list from Group memberships, Group-owned grants, and the Account's
+physical and virtual ancestry. Because the request concerns one actor and one
+account, the response is bounded:
 
 ```mermaid
 sequenceDiagram
   autonumber
   participant S as Calling Service
   participant AZ as Authorization Service
+  participant GS as Group Service
 
   S->>AZ: GET /capabilities/Account/:account_id<br/>pad-user-id: actor
+  AZ->>GS: Resolve actor's Group memberships<br/>pad-user-id: IAM_SYSTEM_AUTH
+  GS-->>AZ: group_id collection
   AZ-->>S: [account.read, account.users.read, ...]
   Note over S,AZ: Search the returned array<br/>for account.users.read
 ```
@@ -94,14 +92,20 @@ sequenceDiagram
   autonumber
   participant S as Calling Service
   participant AZ as Authorization Service
+  participant GS as Group Service
   participant AS as Account Service
-  participant G as Capability Grants
+  participant OS as Organization Service
+  participant DB as capability_grants
 
   S->>AZ: POST /can/Account/account.users.read<br/>{ scope_id: [A, B, C] }<br/>pad-user-id: admin
+  AZ->>GS: Resolve admin's Group memberships<br/>pad-user-id: IAM_SYSTEM_AUTH
+  GS-->>AZ: applicable group IDs
   AZ->>AS: POST /accounts_with_parents<br/>{ account_ids: [A, B, C] }<br/>pad-user-id: IAM_SYSTEM
   AS-->>AZ: { A: [...], B: [...], C: [...] }
-  AZ->>G: find matching grants across ancestor scope IDs
-  G-->>AZ: granted scope-ID set
+  AZ->>OS: Resolve MSP provider edges<br/>pad-user-id: IAM_SYSTEM_AUTH
+  OS-->>AZ: provider Account IDs, if any
+  AZ->>DB: matching Group grants across physical and virtual scopes
+  DB-->>AZ: granted scope-ID set
   AZ-->>S: 200 only if A, B, and C are all covered<br/>otherwise 403 for the complete collection
 ```
 
@@ -123,7 +127,9 @@ shows the first lookup as `SQL Group Pluck` under
 
 ## Measured Evidence
 
-The [retrieval and authorization results](./graphql-auth-explosion-results#retrieval-and-authorization) distinguish successful capabilities-versus-`/can` comparisons from empty-HTTP-reply failures. These measurements do not replace the authorization semantics audit above.
+The group-grant implementation was checked with direct and inherited allows, nonmembers, unrelated branches, mixed permissions and scopes, two independent MSPs, provider ancestry, Organization and Group scopes, collection all-or-nothing behavior, both authorization APIs, and Redis-enabled and disabled paths. The production gallery workloads then reran with exact response checks.
+
+The [retrieval and authorization results](./graphql-auth-explosion-results#retrieval-and-authorization) distinguish successful capabilities-versus-`/can` comparisons from empty-HTTP-reply failures. Those timings are measurements of named workloads, not a substitute for the separate correctness matrix.
 
 
 ### Trace the Collection Request

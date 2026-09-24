@@ -221,6 +221,13 @@ Mobilis::DSL.generate("parent_account_id") do
 end
 ```
 
+This is intentionally the **initial** scaffold, not the current data model.
+The generated `capabilities.subject_id` table predates the authorization model
+described in the case study. Active `capability_grants` now belong to Groups,
+users receive them through Group memberships, and the later Group Service is a
+first-class owner of Groups and membership rows. The old table remains only as
+historical scaffold residue; current authorization does not read it.
+
 
 ## Related
 

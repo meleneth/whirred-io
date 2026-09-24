@@ -1,6 +1,7 @@
 # GraphQL Auth Explosion Case Study, Part 1: CTE
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
+
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
 > Status: ramblings
@@ -83,9 +84,16 @@ flowchart LR
 
 The caller now makes one request for the hierarchy, and Account Service resolves the direct lineage with one recursive database query. The response contains the target and its ancestors—not the target's children, its sibling branches, or every account in the organization.
 
+That returned hierarchy remains physical and client-local. MSP provider Accounts
+are added only to Authorization Service's internal scope graph; they are never
+inserted into the client hierarchy response. Account Service also authorizes
+the requested and returned Account records before disclosing them to a real
+actor. The narrow Authorization Service fact lookup uses an explicit internal
+context instead.
+
 The production implementation accepts multiple target accounts, constructs bound UUID inputs, integrates organization scoping, and groups each returned lineage back under its requested account ID. Those mechanics support the later batching work, but the recursion is the same anchor-and-parent step shown above.
 
-[View the fixed-revision `compute_accounts_with_parents` implementation](https://github.com/meleneth/iam-system-demo/blob/55dec87ecebf97632cfb36f259bf71d4b5e36a21/account-service/app/controllers/accounts_controller.rb#L190-L250)
+[View the fixed-revision `compute_accounts_with_parents` implementation](https://github.com/meleneth/iam-system-demo/blob/42f2ec4/account-service/app/controllers/accounts_controller.rb)
 
 ## Measured Evidence
 

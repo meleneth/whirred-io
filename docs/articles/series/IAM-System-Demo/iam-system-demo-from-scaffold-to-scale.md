@@ -41,6 +41,12 @@ That split gives each piece a clear responsibility:
 
 Retrieval and authorization remain batched, while missing context and missing policy fail closed.
 
+The active authorization model is Group-based. Capability grants belong to
+Groups, users receive them through explicit memberships, and Authorization
+Service resolves those memberships before evaluating a request. Physical
+Account ancestry and explicit MSP provider relationships determine which
+Account scopes a Group grant covers; provider affiliation alone grants nothing.
+
 The repeated cross-service model definitions were then extracted into seven small resource gems, alongside the shared context and authorization machinery. Services now depend on common implementations instead of maintaining copies that gradually diverge in behavior.
 
 ## What the evidence says
@@ -60,6 +66,7 @@ The practical lessons are:
 - ask directly for the permission decisions the caller needs;
 - keep policy enforcement with the service that owns the records;
 - propagate authorization context explicitly across execution and transport boundaries;
+- model grants through explicit Group membership instead of attaching them directly to Users;
 - verify returned identities and exclusions alongside response time;
 - retain failed requests and incomplete traces as evidence.
 

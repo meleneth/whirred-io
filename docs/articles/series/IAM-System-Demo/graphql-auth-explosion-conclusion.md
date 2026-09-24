@@ -30,6 +30,7 @@ The fixes removed or contained one multiplier at a time:
 
 - batch remote retrieval instead of looping over ids
 - authorize the complete account collection with one set-oriented permission check instead of calculating capabilities per account
+- resolve Group-owned grants through explicit memberships instead of attaching grants directly to Users
 - push hierarchy work into database queries where it belongs
 - cache at service boundaries that match ownership
 - apply bounded concurrency after the request shape is batched

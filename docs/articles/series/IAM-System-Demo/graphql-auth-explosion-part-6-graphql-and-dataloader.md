@@ -1,9 +1,8 @@
 # GraphQL Auth Explosion Case Study, Part 6: GraphQL and Dataloader
 
-Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
-Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
+Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
 
-> Status: waiting on Dataloader consistency audit; [trace evidence is available](./graphql-auth-explosion-traces#graphql-preserves-the-service-boundaries).
+Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
 ## GraphQL Is Where the N+1 Comes Back
 
@@ -193,7 +192,7 @@ That requires two batched stages, not one Group request. Showing both stages kee
 
 The Dataloader layer is effective only because the lower layers already expose collection-shaped operations. It can collect Account IDs, but Account Service must accept multiple IDs. It can collect account join keys, but User Service must accept multiple `account_id` values. It can collect User IDs, but Group Service must accept multiple `user_id` values.
 
-The implementation still has to preserve the actor identity, authorization semantics, ordering, missing-record policy, chunk boundaries, and trace context through every source. Those details are under audit before this page is ready for publication. The lesson does not depend on pretending they are already perfect:
+The implementation must also preserve actor identity, authorization semantics, ordering, empty results, chunk boundaries, and trace context through every source. The current regression suite covers mixed GraphQL actors and nested data, the selected gallery responses pass exact identity checks, and the traces retain the actor-scoped service calls. Those checks establish the described request shape; they do not turn Dataloader itself into an authorization boundary:
 
 > Dataloader creates an opportunity to batch. Only the source implementation decides whether that opportunity survives the next network boundary.
 

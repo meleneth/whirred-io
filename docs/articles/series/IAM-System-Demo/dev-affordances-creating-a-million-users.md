@@ -39,9 +39,11 @@ Switching to **Goaws** changed the shape of the test harness:
 
 - Single Go binary, trivial to run.
 - Faithful enough to real AWS queue semantics for this workload.
-- Even under a million synthetic user messages, it stayed tiny in memory.
+- In this run it used far less observed memory than the LocalStack setup.
 
-Goaws made the stress harness possible. LocalStack was too heavy for this specific loop.
+Goaws made the stress harness practical on the development host. This was an
+operator observation from the experiment, not a controlled memory benchmark of
+the two projects.
 
 ## Rails workers in containers
 
@@ -68,12 +70,20 @@ Once the pieces were in place, we hammered the system:
 
 The point was not to keep the users. It was to watch the retrieval pipeline under load and prove the design was sound enough to keep exploring.
 
-Bulk creation was fast, retrieval scaled, and the caches plus CTE queries behaved as expected. The only reason to stop was running out of interesting theses to test.
+The run produced the large fixture needed to expose retrieval behavior. It did
+not record a publication-quality creation-duration, worker-count, failure-rate,
+or peak-memory result, so it should not be read as proof of a one-million-user
+throughput limit. The measured articles use named subsets and fixtures with
+their own request outcomes instead.
 
 ## Outro
 
-The async user creation project was not a feature. It was a synthetic stress harness that let us throw millions of objects into the system and prove our retrieval and authorization model scaled.
+The async user creation project was not a feature. It was a synthetic data
+factory that made large retrieval and authorization experiments possible. The
+later benchmarks and correctness suites—not the fact that the records could be
+created—supply the evidence about those request paths.
 
-LocalStack collapsed. Goaws cruised. Rails workers inside Docker made it easy to spin up as much concurrency as we wanted.
-
-
+LocalStack failed this local workload; Goaws completed it with much lower
+observed overhead. Rails workers inside Docker made the concurrency easy to
+adjust, while the absence of a controlled creation benchmark remains a limit of
+this experiment.
