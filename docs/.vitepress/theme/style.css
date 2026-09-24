@@ -156,19 +156,36 @@ html.dark {
 
 
 .o11y-stack-selector {
-    @apply my-8 flex flex-col gap-2 rounded-lg border border-white/10 bg-slate-950/60 p-4 shadow-lg shadow-black/10 sm:flex-row sm:items-center sm:justify-between;
+    @apply my-8 flex flex-col gap-2 rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between;
+    border: 1px solid var(--vp-c-divider);
+    background: var(--vp-c-bg-soft);
 }
 
 .o11y-stack-selector label {
-    @apply text-sm font-semibold text-slate-200;
+    @apply text-sm font-semibold;
+    color: var(--vp-c-text-1);
 }
 
 .o11y-stack-selector select {
-    @apply min-w-48 rounded-md border border-white/15 bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm outline-none transition;
+    @apply rounded-md px-3 py-2 text-sm font-semibold;
+    appearance: auto;
+    -webkit-appearance: auto;
+    min-width: min(12rem, 100%);
+    max-width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--vp-c-text-2);
+    background: var(--vp-c-bg);
+    color: var(--vp-c-text-1);
+    cursor: pointer;
 }
 
-.o11y-stack-selector select:focus {
-    @apply border-emerald-400 ring-2 ring-emerald-400/30;
+.o11y-stack-selector select:hover {
+    border-color: var(--vp-c-brand-1);
+}
+
+.o11y-stack-selector select:focus-visible {
+    outline: 2px solid var(--vp-c-brand-1);
+    outline-offset: 3px;
 }
 
 .o11y-stack-panel {

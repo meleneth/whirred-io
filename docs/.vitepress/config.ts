@@ -20,17 +20,18 @@ const config = defineConfig({
         siteTitle: 'whirred.io',
         aside: false,
         nav: [
-            { text: 'Articles', link: '/' }
+            { text: 'Articles', link: '/articles/' }
         ],
         sidebar: [
             {
                 text: 'Articles',
                 items: [
-                    { text: 'All Articles', link: '/' },
+                    { text: 'All Articles', link: '/articles/' },
                     {
                         text: 'GraphQL Auth Explosion Case Study',
                         collapsed: false,
                         items: [
+                            { text: 'Start Here', link: '/articles/series/IAM-System-Demo/iam-system-demo-from-scaffold-to-scale' },
                             { text: 'Series Home', link: '/articles/series/IAM-System-Demo/iam-system-demo' },
                             { text: 'Overview', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study' },
                             { text: 'Part 1: CTE', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte' },
@@ -52,6 +53,8 @@ const config = defineConfig({
                         items: [
                             { text: 'Scaffold: Distributed Platform', link: '/articles/series/IAM-System-Demo/dev-affordances-distributed-platform-in-10-minutes' },
                             { text: 'ActiveResource Default Implementation', link: '/articles/series/IAM-System-Demo/dev-affordances-activeresource-default-implementation' },
+                            { text: 'Explicit Authorization Boundaries', link: '/articles/series/IAM-System-Demo/dev-affordances-explicit-authorization-boundaries' },
+                            { text: 'Cross-Service Resource Gems', link: '/articles/series/IAM-System-Demo/dev-affordances-cross-service-resource-gems' },
                             { text: 'Creating a Million Users', link: '/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users' },
                             { text: 'Devcontainers for Local Systems', link: '/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems' },
                             { text: 'Foreman Process Orchestration', link: '/articles/series/IAM-System-Demo/foreman-for-local-process-orchestration' }

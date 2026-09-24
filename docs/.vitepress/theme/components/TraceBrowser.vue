@@ -75,15 +75,13 @@ onBeforeUnmount(() => { controller?.abort(); window.removeEventListener('popstat
     <label v-if="!embedded" class="trace-picker">Example
       <select :value="active" @change="load($event.target.value)"><option v-for="item in catalog" :key="item.id" :value="item.id">{{ item.title }}</option></select>
     </label>
-    <p v-if="entry"><a :href="withBase(entry.file)" download>Download {{ entry.kind === 'subtree' ? 'subtree' : 'complete' }} Jaeger JSON</a> · {{ (entry.bytes / 1000).toFixed(1) }} kB</p>
-    <p v-if="entry?.kind === 'subtree'" class="trace-note"><strong>Complete subtree excerpt:</strong> {{ entry.spans }} of {{ entry.sourceSpans }} spans from the original trace. Every descendant of the selected root is included. Ancestors and sibling requests are omitted; original span IDs, times, tags and references are retained. The root's parent reference points outside this excerpt.</p>
-    <p v-if="entry?.sourceRequestOutcome === 'transport_error'" class="trace-note"><strong>Failed enclosing request:</strong> The source request ended with an empty HTTP reply (curl exit 52). The complete selected authorization subtree is retained. This is not a successful full-request latency sample.</p>
+    <p v-if="entry"><a :href="withBase(entry.file)" download>Download complete Jaeger JSON</a> · {{ (entry.bytes / 1000).toFixed(1) }} kB</p>
     <p v-if="loading" role="status">Loading trace…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load(active)">Retry</button></p>
     <template v-if="model">
       <p><strong>{{ model.nodes.size }} spans</strong> · {{ model.services.length }} services · {{ durationLabel(model.duration) }} elapsed span envelope</p>
       <p v-if="entry?.railsProcessesStable" class="trace-note">Measured after Rails workload warmup with unchanged server processes. ActiveRecord query caching remains enabled; Solid Cache is removed. Cold Redis examples clear only Redis.</p>
-      <p v-if="entry?.sourceClientElapsedSeconds != null" class="trace-note">{{ entry.kind === 'subtree' ? 'Enclosing workload' : 'Workload' }} client elapsed: <strong>{{ entry.sourceClientElapsedSeconds.toFixed(3) }} s</strong> · {{ entry.sourceHttpStatus ? `HTTP ${entry.sourceHttpStatus}` : entry.sourceRequestOutcome }}. {{ entry.kind === 'subtree' ? 'This is not the selected subtree duration.' : 'This includes time outside the recorded span envelope.' }}</p>
+      <p v-if="entry?.sourceClientElapsedSeconds != null" class="trace-note">Workload client elapsed: <strong>{{ entry.sourceClientElapsedSeconds.toFixed(3) }} s</strong> · {{ entry.sourceHttpStatus ? `HTTP ${entry.sourceHttpStatus}` : entry.sourceRequestOutcome }}. This includes time outside the recorded span envelope.</p>
       <p class="trace-note">Indentation shows parent/child nesting within this example. Bars share a relative time axis. Parent durations include children; overlapping spans are not additive. Search keeps ancestors visible. The span envelope can differ from benchmark HTTP timing.</p>
       <div class="trace-controls">
         <label>Search spans and tags <input v-model="query" type="search" placeholder="e.g. /can, SELECT, graphql" /></label>
@@ -118,7 +116,7 @@ onBeforeUnmount(() => { controller?.abort(); window.removeEventListener('popstat
         <table><thead><tr><th>Tag</th><th>Value</th></tr></thead><tbody><tr v-for="(tag, i) in detail.tags" :key="i"><td>{{ tag.key }}</td><td><code>{{ typeof tag.value === 'object' ? JSON.stringify(tag.value) : tag.value }}</code></td></tr></tbody></table>
         <details><summary>Logs, references, warnings and process metadata</summary><pre>{{ JSON.stringify({ logs: detail.logs, references: detail.references, warnings: detail.warnings, traceWarnings: model.trace.warnings, process: model.trace.processes?.[detail.processID] }, null, 2) }}</pre></details>
       </section>
-      <details><summary>Trace provenance</summary><p>Trace ID: <code>{{ entry.traceID }}</code></p><p>{{ entry.source }}</p><p>{{ entry.kind === 'subtree' ? 'Complete subtree excerpt; ancestors and siblings omitted. Root: ' + entry.rootSpanID + '.' : 'Complete export; only JSON whitespace removed.' }} SHA-256: <code>{{ entry.sha256 }}</code></p></details>
+      <details><summary>Trace provenance</summary><p>Trace ID: <code>{{ entry.traceID }}</code></p><p>{{ entry.source }}</p><p>Complete export; only JSON whitespace removed. SHA-256: <code>{{ entry.sha256 }}</code></p></details>
     </template>
     <noscript>This viewer needs JavaScript. Download the Jaeger JSON files from the trace gallery to inspect them elsewhere.</noscript>
   </section>

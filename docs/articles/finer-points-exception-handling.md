@@ -6,6 +6,8 @@
 
 Exception handling got extra tricky in the age of observability.
 
+First, the usual rule still applies: catch only the specific exceptions you explicitly expect and have a reason to handle. Catching everything around an operation can sweep programming mistakes and unrelated failures into the same recovery path. Let unexpected exceptions propagate. The broad rescue blocks below are part of the antipattern being illustrated.
+
 Reporting an exception is fine. Reporting it and then continuing as if the failed operation succeeded is the bug.
 
 The worst part is not only production correctness. It is developer experience. In production, an error-reporting agent may at least leave a breadcrumb. In development and test, that breadcrumb is often disabled, stubbed, ignored, or not configured. Then the exception is simply swallowed. The original stack trace is gone, and the test fails later with no obvious connection to the operation that actually broke.

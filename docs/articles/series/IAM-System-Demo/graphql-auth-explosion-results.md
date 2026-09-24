@@ -2,97 +2,87 @@
 
 Series: [GraphQL Auth Explosion Case Study](./iam-system-demo)
 
-The largest gains came from reducing the work repeated across service boundaries. Retrieving a depth-25 hierarchy in one request was **24.8× faster** than walking its parents over HTTP. Batching deep user retrieval was **11.5× faster** than fetching records serially. For the largest multi-organization GraphQL walk, warm Redis reduced the total request time from **175.4 seconds to 24.1 seconds**.
+The September 17, 2026 production benchmark measured the full 17-case matrix on revision `21f58d0`. Twelve cases passed all collector checks. Three cases failed at the HTTP request, and two returned valid responses but failed because some Jaeger traces were incomplete. The tables below distinguish those outcomes; this is **not a fully passing benchmark matrix**.
 
-Batching retrieval alone did not solve the authorization cost. On the wide workload, asking `/can` about the collection was **15.3× faster** than calculating full capabilities, even with retrieval already batched. Two other capabilities workloads failed to return a response.
+The clearest completed comparisons are at the service boundaries: a depth-25 hierarchy took 0.792s through 25 parent requests versus 0.114s in one CTE request; the deep Organization walk took 23.673s with serial retrieval versus 2.076s batched. For the largest GraphQL fanout, the observed median was 244.037s with Redis disabled and 37.395s with warm Redis, but that case failed trace archival.
 
-These measurements come from the September 10, 2026 benchmark. Tables show seconds as **median [minimum–maximum]** across three measured runs; speedups compare medians. Paginated results cover the complete walk and sum its HTTP request times.
+All times below are client elapsed seconds, shown as **median [minimum–maximum]** for three measured samples. Ratios compare medians of completed requests. Paginated totals sum HTTP request times across the whole walk, excluding pauses, warmups, and trace export. Redis-on “cold” means a Redis flush before the measured workload; “warm” follows a priming workload. PostgreSQL buffers and processes were not reset.
 
 ## Hierarchy traversal and smart APIs
 
-Following a parent pointer crosses the network at every level. The hierarchy endpoint moves that traversal into Account Service, where a recursive CTE resolves the lineage in one request. Redis was disabled and actor authorization remained enabled for both paths.
+With Redis disabled and actor authorization enabled, the recursive CTE kept a depth-25 traversal inside Account Service instead of making 25 client requests.
 
 | Depth | Parent-by-parent GET | Hierarchy GET / CTE | Ratio | Client requests |
 | --- | ---: | ---: | ---: | --- |
-| 1 | 0.055 [0.041–0.057] | 0.081 [0.055–0.092] | 0.7× | 1 → 1 |
-| 5 | 0.190 [0.167–0.210] | 0.069 [0.063–0.074] | 2.7× | 5 → 1 |
-| 10 | 0.297 [0.274–0.401] | 0.049 [0.045–0.052] | 6.0× | 10 → 1 |
-| 25 | 1.385 [0.582–1.601] | 0.056 [0.046–0.076] | 24.8× | 25 → 1 |
+| 1 | 0.050 [0.044–0.061] | 0.095 [0.091–0.118] | 0.5× | 1 → 1 |
+| 5 | 0.181 [0.172–0.200] | 0.097 [0.080–0.101] | 1.9× | 5 → 1 |
+| 10 | 0.326 [0.311–0.362] | 0.087 [0.072–0.134] | 3.7× | 10 → 1 |
+| 25 | 0.792 [0.786–0.792] | 0.114 [0.091–0.185] | 6.9× | 25 → 1 |
 
-At depth 1, the hierarchy endpoint was slower. At depth 25, it replaced 25 client requests with one and cut the median from 1.385s to 0.056s. Both paths returned equivalent IDs and parent links.
-
-The same pattern appeared when requesting several hierarchies: sending the targets together removed another loop over HTTP calls.
+The depth-1 CTE request was slower. The advantage grew as the HTTP walk gained more steps. Both paths returned equivalent IDs and parent links. Batching multiple hierarchy targets removed another client-side loop:
 
 | Target set | Individual hierarchy GETs | One batch POST | Ratio | Client requests |
 | --- | ---: | ---: | ---: | --- |
-| Deep, 8 targets | 0.201 [0.170–0.304] | 0.054 [0.047–0.078] | 3.7× | 8 → 1 |
-| Deep, 25 targets | 0.581 [0.556–0.660] | 0.059 [0.033–0.061] | 9.9× | 25 → 1 |
-| Wide, 8 targets | 0.257 [0.200–0.281] | 0.073 [0.058–0.135] | 3.5× | 8 → 1 |
-| Wide, 251 targets | 7.623 [7.047–10.357] | 0.266 [0.257–0.346] | 28.7× | 251 → 1 |
+| Deep, 8 targets | 0.628 [0.624–0.642] | 0.114 [0.097–0.116] | 5.5× | 8 → 1 |
+| Deep, 25 targets | 1.926 [1.789–1.938] | 0.114 [0.104–0.123] | 16.9× | 25 → 1 |
+| Wide, 8 targets | 0.645 [0.625–0.708] | 0.094 [0.072–0.113] | 6.9× | 8 → 1 |
+| Wide, 251 targets | 18.960 [18.937–22.703] | 0.402 [0.400–0.674] | 47.2× | 251 → 1 |
 
-For 251 targets, one batch replaced 251 requests and reduced the median from 7.623s to 0.266s. In a separate cache comparison, warming Redis reduced the depth-25 hierarchy GET median from 0.040s to 0.006s.
+In a separate Redis-on comparison, the depth-25 CTE median fell from 0.086s cold to 0.011s warm. That comparison includes application cache effects and is separate from the Redis-disabled table.
 
 ## Retrieval and authorization
 
-Batching user retrieval reduced the deep workload from 13.269s to 1.152s while keeping capabilities authorization in both cases. The wide workload exposed the next cost: batched retrieval still took 27.266s with full capabilities, versus 1.785s with `/can`.
+The deep fixture contained 25 accounts and 500 users; wide contained 251 accounts and 5,020 users; sparse contained 401 accounts and 8,020 users. The retrieval cases used capabilities authorization and Redis disabled. Both deep paths completed, while both wide capabilities paths failed. The `/can` cases used batched retrieval with Redis disabled.
 
-Redis was disabled, with batch size 1000. The deep fixture contained 25 accounts and 500 users; wide contained 251 accounts and 5,020 users; sparse contained 401 accounts and 8,020 users.
-
-| Workload | Mode | Result | Seconds |
+| Workload | Mode | Outcome | Seconds |
 | --- | --- | --- | ---: |
-| Deep | Serial, capabilities | 3/3 succeeded | 13.269 [12.315–15.346] |
-| Deep | Batched, capabilities | 3/3 succeeded | 1.152 [1.142–1.673] |
-| Wide | Serial, capabilities | 3/3 empty HTTP replies | 135.832 [135.280–145.987] to failure |
-| Wide | Batched, capabilities | 3/3 succeeded | 27.266 [26.598–27.794] |
-| Wide | Batched, /can | 3/3 succeeded | 1.785 [1.782–2.410] |
-| Sparse | Batched, capabilities | 3/3 empty HTTP replies | 66.507 [63.751–73.404] to failure |
-| Sparse | Batched, /can | 3/3 succeeded | 3.829 [3.755–4.639] |
+| Deep | Serial, capabilities | 3/3 succeeded | 23.673 [21.907–25.449] |
+| Deep | Batched, capabilities | 3/3 succeeded | 2.076 [2.050–2.366] |
+| Wide | Serial, capabilities | 3/3 client timeouts | 180s deadline; no response |
+| Wide | Batched, capabilities | 3/3 empty HTTP replies | 42.334 [42.000–43.612] to failure |
+| Wide | Batched, `/can` | 3/3 succeeded | 1.989 [1.922–2.392] |
+| Sparse | Batched, capabilities | 3/3 empty HTTP replies | 94.901 [94.678–105.928] to failure |
+| Sparse | Batched, `/can` | 3/3 succeeded | 4.066 [3.910–4.802] |
 
-Wide serial retrieval and sparse batched retrieval failed in all three runs with capabilities authorization. Each connection closed without an HTTP response, before the client deadline. The table records time to failure for those rows; the cause remains unresolved. Deep serial, deep batched, and wide batched capabilities requests all completed, so the failure depended on the workload.
-
-The faster `/can` results still require the [authorization semantics audit in Part 3](./graphql-auth-explosion-part-3-multiple-object-authorization). Timing success does not verify permission inheritance or the requirement to authorize every account in the collection.
+The completed deep comparison shows an **11.4×** lower median with batched retrieval. The wide and sparse capabilities failures cannot be used as completed latency comparisons against `/can`. All nine failing samples closed or timed out without returning an account collection. The collection did not establish the mechanism behind the empty replies. The `/can` measurements show successful requests at those sizes, subject to the [authorization semantics audit in Part 3](./graphql-auth-explosion-part-3-multiple-object-authorization).
 
 ## Application cache
 
-Warm Redis helped the wide organization walk, but made little difference for one dense account containing 20,000 users. Both comparisons used batched `/can`, batch size 1000, and complete organization partition walks. “Cold” means Redis was flushed; PostgreSQL buffers could already be warm.
+Both Organization walks below used batched `/can`, batch size 1000, and complete partition walks. The dense account contained 20,000 users.
 
 | Fixture | Cold Redis | Warm Redis | Cold/warm ratio |
 | --- | ---: | ---: | ---: |
-| Wide organization | 1.061 [0.963–1.251] | 0.745 [0.713–0.770] | 1.4× |
-| Dense account, 20,000 users | 3.210 [3.122–3.307] | 3.136 [2.847–3.764] | 1.0× |
+| Wide organization | 1.106 [1.078–1.417] | 0.874 [0.767–0.877] | 1.3× |
+| Dense account | 3.498 [3.171–3.584] | 3.018 [2.969–3.369] | 1.2× |
 
-The wide organization’s median fell by about 30%. The dense account’s median fell by only about 2%, with overlapping ranges. Cache gains varied substantially with the workload.
+These small samples show a modest cache benefit in both fixtures; they do not establish concurrency or tail-latency effects.
 
 ## GraphQL MSP scale
 
-The multi-organization MSP walks showed much larger cache gains. With batched `/can` and batch size 10000, warm Redis made complete GraphQL walks roughly seven times faster than running without Redis.
+These multi-organization fanout walks used batched `/can` and batch size 10000. Every measured response passed the response checker and returned the expected 9,999, 49,999, or 99,999 accounts. Both cases supplying this table **failed the collector's trace completeness check**: five of 63 traces in the Redis-off case and two of 189 in the Redis-on case lacked required parent spans. The timings are valid response observations, not passed full-case results.
 
 | Returned accounts (pages) | Redis off | Redis cold | Redis warm | Off/warm ratio |
 | --- | ---: | ---: | ---: | ---: |
-| 9,999 (1) | 16.693 [16.534–16.972] | 7.474 [7.165–7.826] | 2.135 [2.103–2.302] | 7.8× |
-| 49,999 (5) | 84.470 [83.670–87.601] | 37.970 [37.413–38.872] | 11.603 [10.843–13.206] | 7.3× |
-| 99,999 (10) | 175.411 [174.357–183.449] | 78.770 [78.492–81.241] | 24.058 [22.257–28.946] | 7.3× |
+| 9,999 (1) | 8.732 [8.647–8.833] | 5.423 [5.369–5.745] | 2.933 [2.402–3.030] | 3.0× |
+| 49,999 (5) | 79.035 [78.313–80.400] | 30.152 [28.558–30.429] | 16.051 [15.910–16.598] | 4.9× |
+| 99,999 (10) | 244.037 [239.336–246.410] | 63.436 [62.003–65.890] | 37.395 [34.235–37.549] | 6.5× |
 
-All these walks completed. For the nominal 100k fixture, returning 99,999 accounts across ten pages took 175.4s without Redis, 78.8s with cold Redis, and 24.1s with warm Redis. These accounts span multiple organizations.
+The missing Jaeger parents persisted on re-query. During each affected request, the OpenTelemetry collector logged a dropped export after Jaeger's OTLP receiver rejected a message above its 4 MiB decompressed limit. The timing match supports this as the trace gap's cause; the logs do not identify the exact missing span IDs.
 
 ## Batch boundaries
 
-Larger pages reduced the repeated work needed to retrieve the same 9,999 accounts. This comparison used the nominal MSP 10k fixture with Redis enabled and `/can`.
+For the same 9,999-account GraphQL fanout with Redis enabled, reducing pages improved both cold and warm totals. The batch-200 and batch-1000 cases passed all collector checks; the batch-10000 case has the trace archival failure described above.
 
-| Batch size | Pages | Cold | Warm |
-| --- | ---: | ---: | ---: |
-| 200 | 50 | 18.441 [18.074–22.060] | 10.264 [10.101–10.438] |
-| 1000 | 10 | 9.892 [9.704–10.360] | 3.597 [3.465–3.664] |
-| 10000 | 1 | 7.474 [7.165–7.826] | 2.135 [2.103–2.302] |
+| Batch size | Pages | Cold | Warm | Collector case |
+| --- | ---: | ---: | ---: | --- |
+| 200 | 50 | 31.197 [30.819–34.003] | 24.956 [24.272–25.716] | Passed |
+| 1000 | 10 | 13.564 [12.450–13.965] | 5.055 [5.008–5.058] | Passed |
+| 10000 | 1 | 5.423 [5.369–5.745] | 2.933 [2.402–3.030] | Trace archival failed |
 
-Increasing batch size from 200 to 10000 reduced the walk from 50 pages to one. The median warm total fell from 10.264s to 2.135s, a 4.8× improvement; the cold total improved by 2.5×. The test did not measure the memory cost or concurrent throughput of those larger responses.
+The observed warm total fell by 8.5× from batch 200 to 10000. The test did not measure peak memory, concurrent throughput, or the cost of much larger responses under load.
 
-Caching did not improve every GraphQL workload: a separate dense-organization query at batch size 10000 had a warm median of 3.770s versus 3.279s cold.
+## Measurement scope and source data
 
-## Measurement scope
+The production stack ran on an AMD Ryzen 9 7940HS host with 8 cores / 16 threads and about 61 GiB RAM. The run used an existing production fixture manifest, passed both smoke cases and all 17 per-case sampled live authorization gates, and completed collection of all 17 cases. Five cases failed the full collector criteria. The gate and response checks did **not** provide an independent audit of every returned identity. Three samples per comparison do not establish tail latency or a maximum supported dataset.
 
-The benchmark ran on an AMD Ryzen 9 7940HS host with 8 cores / 16 threads and about 61 GiB usable RAM, using Ruby 4.0.6, PostgreSQL 18.6, and Redis 8.10.1. Seeding had finished and background workers were stopped before measurement.
-
-Three runs per comparison show the size and variation of these effects in this environment. They do not establish tail latency, performance under concurrent load, or a maximum supported dataset. Full-walk totals exclude pauses between requests and trace collection. Peak memory and the cause of the failed requests were not measured or established.
-
-The [trace gallery](./graphql-auth-explosion-traces) illustrates the service calls behind these patterns using samples from a later September 12 collection. The [benchmark JSON](/traces/iam/benchmark-summary.json) contains the extracted comparisons, and the [collection status](/traces/iam/collection-status.json) records completion details for the September 10 run.
+The [machine-readable September 17 summary](/traces/iam/benchmark-summary.json) includes the sample groups and collector case status; the [collection status](/traces/iam/collection-status.json) lists the five failed cases. The [trace gallery](./graphql-auth-explosion-traces) uses separate September 24 requests to illustrate the refactored call structure; those samples do not replace this benchmark. The invalid September 10 dataset is superseded and should not be used for current comparisons.

@@ -3,16 +3,16 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: draft; reproducible retrieval-mode benchmark collected September 10, 2026.
+> Status: draft; retrieval-mode benchmark collected September 17, 2026.
 
 The [measured retrieval results](./graphql-auth-explosion-results#retrieval-and-authorization) now compare serial and batched modes with the same fixture, authorization mode, and cache state.
 
 | Deep fixture, capabilities mode, Redis disabled | Median seconds [minimum–maximum] | Outcome |
 | --- | ---: | --- |
-| Serial retrieval | 13.269 [12.315–15.346] | 3/3 succeeded |
-| Batched retrieval | 1.152 [1.142–1.673] | 3/3 succeeded |
+| Serial retrieval | 23.673 [21.907–25.449] | 3/3 succeeded |
+| Batched retrieval | 2.076 [2.050–2.366] | 3/3 succeeded |
 
-The ratio of medians is 11.5×. Wide serial retrieval failed with empty HTTP replies, so it is not a completed latency comparison. These retrieval traces are too large for the hosted gallery; the [eight-target hierarchy pair](./graphql-auth-explosion-traces#eight-hierarchy-calls-or-one-batch) illustrates batching at a different boundary.
+The ratio of medians is 11.4×. Wide serial retrieval hit the 180-second client deadline in all three runs; wide batched retrieval returned three empty HTTP replies. Neither provides a completed wide-fixture latency comparison. These retrieval traces are too large for the hosted gallery; the [eight-target hierarchy pair](./graphql-auth-explosion-traces#eight-hierarchy-calls-or-one-batch) illustrates batching at a different boundary.
 
 ## Multiple Object Retrieval
 

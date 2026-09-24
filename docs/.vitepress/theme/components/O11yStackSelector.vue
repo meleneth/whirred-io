@@ -36,7 +36,7 @@ watch(activeStack, (stack) => {
 
 <template>
   <div class="o11y-stack-selector" aria-label="Observability stack selector">
-    <label for="o11y-stack-select">Frame examples for</label>
+    <label for="o11y-stack-select">Code examples for</label>
     <select id="o11y-stack-select" v-model="activeStack">
       <option v-for="stack in stacks" :key="stack.value" :value="stack.value">
         {{ stack.label }}

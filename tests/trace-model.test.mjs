@@ -30,16 +30,14 @@ test('all published traces retain full trees, match manifest hashes, and fit hos
   assert.equal(bytes.length, entry.bytes)
   assert.equal(m.trace.traceID, entry.traceID)
   assert.equal(visibleRows(m).length, entry.spans)
-  assert.ok(entry.bytes < 1_000_000)
-  if (entry.kind === 'subtree') {
-   assert.equal(m.roots.length, 1)
-   assert.equal(m.roots[0].spanID, entry.rootSpanID)
-   assert.ok(entry.sourceSpans > entry.spans)
-  } else assert.ok(entry.sourceBytes < 1_500_000)
+  assert.ok(entry.bytes < 2_000_000)
+  assert.equal(entry.kind, 'complete')
+  assert.equal(entry.sourceSpans, entry.spans)
+  assert.ok(entry.sourceBytes < 3_000_000)
   assert.ok(statSync(`docs/public/traces/iam/${entry.id}.svg`).size > 0)
   total += bytes.length
  }
- assert.ok(total < 4_000_000)
+ assert.ok(total < 6_000_000)
 })
 
 test('HTTP labels expose the endpoint without changing the original span or query tags', () => {
@@ -49,4 +47,6 @@ test('HTTP labels expose the endpoint without changing the original span or quer
  assert.equal(m.roots[0].operationName, 'HTTP GET')
  assert.equal(m.roots[0].tagsByKey['http.target'], '/accounts.json?id[]=a')
  assert.equal(raw.displayName, undefined)
+ const named = buildTrace(payload([span('named', 0, null, { operationName: 'Load 20 accounts', tags: [{ key: 'http.method', value: 'POST' }, { key: 'http.target', value: '/accounts_with_parents?ids=20' }] })]))
+ assert.equal(named.roots[0].displayName, 'Load 20 accounts · POST /accounts_with_parents')
 })

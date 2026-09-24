@@ -1,27 +1,39 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import TraceBrowser from './TraceBrowser.vue'
-const props = defineProps({ id: { type: String, required: true } })
-const container = ref(null)
-const ready = ref(false)
-let observer
-onMounted(() => {
-  if (!('IntersectionObserver' in window)) { ready.value = true; return }
-  observer = new IntersectionObserver(entries => {
-    if (entries.some(entry => entry.isIntersecting)) { ready.value = true; observer.disconnect() }
-  }, { rootMargin: '200px' })
-  observer.observe(container.value)
-})
-onBeforeUnmount(() => observer?.disconnect())
+import { computed } from 'vue'
+import { withBase } from 'vitepress'
+import catalog from '../data/iam-traces.json'
+
+const props = defineProps({ id: { type: String, required: true }, description: { type: String, required: true } })
+const entry = computed(() => catalog.find(trace => trace.id === props.id))
+const preview = computed(() => withBase(`/traces/iam/${props.id}.svg`))
+const browser = computed(() => `./graphql-auth-explosion-trace-browser?trace=${encodeURIComponent(props.id)}`)
 </script>
 
 <template>
-  <div ref="container" class="trace-example">
-    <TraceBrowser v-if="ready" :initial-trace="props.id" embedded />
-    <p v-else>Full trace waterfall loads as this example comes into view.</p>
-  </div>
+  <figure v-if="entry" class="trace-example">
+    <figcaption>{{ entry.title }}</figcaption>
+    <p class="trace-example__description">{{ description }}</p>
+    <div class="trace-example__window">
+      <a :href="preview" :aria-label="`Open full-size preview of ${entry.title}`">
+        <img :src="preview" :alt="`Waterfall preview: ${entry.title}`" loading="lazy" width="960" />
+      </a>
+    </div>
+    <p class="trace-example__links">
+      <a :href="browser">Explore all {{ entry.spans }} spans</a>
+      <span aria-hidden="true">·</span>
+      <a :href="preview">Full-size SVG</a>
+      <span aria-hidden="true">·</span>
+      <a :href="withBase(entry.file)" download>Jaeger JSON</a>
+    </p>
+  </figure>
 </template>
 
 <style scoped>
-.trace-example { min-height: 180px; margin: 24px 0; }
+.trace-example { margin: 1.5rem 0 2rem; }
+.trace-example figcaption { margin-bottom: .5rem; font-weight: 600; }
+.trace-example__description { margin: 0 0 .75rem; color: var(--vp-c-text-2); }
+.trace-example__window { max-height: 390px; overflow: auto; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: #101827; }
+.trace-example__window a { display: block; width: max-content; }
+.trace-example__window img { display: block; width: 960px; max-width: none; height: auto; margin: 0; }
+.trace-example__links { display: flex; flex-wrap: wrap; gap: .35rem; margin: .6rem 0 0; font-size: .875rem; }
 </style>

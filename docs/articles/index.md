@@ -4,6 +4,7 @@
 
 The main spine: what went wrong in a distributed IAM-style system, why authorization checks multiplied, and how the implementation changed under real load.
 
+- [Start Here: From Scaffold to Scale](/articles/series/IAM-System-Demo/iam-system-demo-from-scaffold-to-scale)
 - [Series Home](/articles/series/IAM-System-Demo/iam-system-demo)
 - [Overview](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 - [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
@@ -21,6 +22,8 @@ Supporting notes about the tooling and implementation affordances that made the 
 
 - [How I Scaffolded an Entire Distributed Platform in 10 Minutes](/articles/series/IAM-System-Demo/dev-affordances-distributed-platform-in-10-minutes)
 - [ActiveResource and the Default Implementation that Astounded Me](/articles/series/IAM-System-Demo/dev-affordances-activeresource-default-implementation)
+- [Explicit Authorization Contexts at the Model Boundary](/articles/series/IAM-System-Demo/dev-affordances-explicit-authorization-boundaries)
+- [Extracting Cross-Service Models into Shared Gems](/articles/series/IAM-System-Demo/dev-affordances-cross-service-resource-gems)
 - [Creating a Million Users](/articles/series/IAM-System-Demo/dev-affordances-creating-a-million-users)
 - [Devcontainers for Local Distributed Systems](/articles/series/IAM-System-Demo/devcontainers-for-local-distributed-systems)
 - [Foreman for Local Process Orchestration](/articles/series/IAM-System-Demo/foreman-for-local-process-orchestration)

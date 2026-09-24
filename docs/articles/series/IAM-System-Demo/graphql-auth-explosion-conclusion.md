@@ -29,6 +29,7 @@ The general rule is to be wildly allergic to N+1 behavior. Treat collection code
 The fixes removed or contained one multiplier at a time:
 
 - batch remote retrieval instead of looping over ids
+- authorize the complete account collection with one set-oriented permission check instead of calculating capabilities per account
 - push hierarchy work into database queries where it belongs
 - cache at service boundaries that match ownership
 - apply bounded concurrency after the request shape is batched

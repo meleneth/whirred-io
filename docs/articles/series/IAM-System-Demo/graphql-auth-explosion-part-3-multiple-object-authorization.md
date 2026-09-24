@@ -105,11 +105,27 @@ sequenceDiagram
   AZ-->>S: 200 only if A, B, and C are all covered<br/>otherwise 403 for the complete collection
 ```
 
+### Memberships Need Their Owning Groups
+
+A `GroupUser` membership has a Group ID, not the Account ID needed for an
+`account.users.read` check. Group Service reads each matching Group's `id`
+and `account_id` before authorizing the membership collection. It checks the
+Account IDs as a set first. If that check fails, it evaluates each Group using
+`group.read` or `account.users.read` on the owning Account. A missing Group
+is an error, not an implicitly authorized membership.
+
+This Group lookup is separate from Authorization Service's lookup of the
+**actor's Group memberships**, which identifies applicable grants. It is also
+separate from loading full Group records for the response. The [complete
+wide-organization trace](./graphql-auth-explosion-traces#authorization-inside-a-complete-organization-request)
+shows the first lookup as `SQL Group Pluck` under
+`GroupUser.collection.authorize`.
+
 ## Measured Evidence
 
 The [retrieval and authorization results](./graphql-auth-explosion-results#retrieval-and-authorization) distinguish successful capabilities-versus-`/can` comparisons from empty-HTTP-reply failures. These measurements do not replace the authorization semantics audit above.
 
 
-### Trace the Difference
+### Trace the Collection Request
 
-Compare [single-record `/can` with full capabilities](./graphql-auth-explosion-traces#single-record-can-versus-full-capabilities), then inspect [the collection call that repeats the hierarchy work](./graphql-auth-explosion-traces#full-capabilities-repeats-the-work-inside-a-collection). Each example includes an interactive browser for the complete selected subtree, with every descendant retained.
+The gallery shows the [complete wide-organization `/can` request](./graphql-auth-explosion-traces#authorization-inside-a-complete-organization-request), including its collection authorization batches. The much larger full-capabilities request is summarized there from the archived source trace; it is not offered as a live waterfall.
