@@ -2,12 +2,9 @@
 
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
 
-> Status: Draft
+## The Workload
 
-
-## Meet My Straw Men
-
-This is my distributed authorization system. There may or may not be similarities to authorization systems I have worked with before, details will differ but I wanted to talk about distributed system optimization and this is as good of a reason as any.
+This is a distributed authorization system built to make cross-service request cardinality visible. Ordinary site requests operate in one Account context. Organization-wide and MSP user management assemble Users, Groups, memberships, and Accounts across many contexts. That second workload is where local-looking model traversal becomes nested HTTP, repeated hierarchy work, and repeated authorization.
 
 We start with Organization, owned by OrganizationService. Organizations have names, and multiple accounts. Organization service knows which Accounts belong to which Organization.
 
@@ -17,9 +14,9 @@ User service owns Users. A User stores an `account_id`, an email address, and ot
 
 Group service owns Groups and GroupUser membership records. A Group stores the `account_id` it belongs to, and a GroupUser stores the `user_id` and `group_id` that connect a User to a Group. Group service owns those relationships; User service does not store Groups on the User record.
 
-Authorization service owns CapabilityGrants. A CapabilityGrant identifies a **Group**, a permission, and the Account, Group, or Organization scope where that permission was granted. Users receive grants through Group memberships; Authorization Service asks Group Service for the requesting actor's Group IDs before evaluating matching grants. It exposes the `can` API used to ask whether that actor may perform a specific action against a specific scope.
+Authorization service owns CapabilityGrants. A CapabilityGrant identifies a **Group**, a permission, and the Account, Group, or Organization scope where that permission was granted. Users receive grants through Group memberships; Authorization Service asks Group Service for the requesting actor's Group IDs before evaluating matching grants. It exposes the `/can` API used to ask whether that actor may perform a specific action against a specific scope.
 
-We also have UserManagementService, which the user will send web requests to directly. We also eventually support GraphQL on this service.
+User Management Service is the application-facing composition layer. It exposes GraphQL and assembles responses from the five owning services.
 
 A tricky bit about this authorization system comes from the account hierarchy as defined by `parent_account_id`. If one of your Groups has a capability grant on an Account in the target's direct ancestor line, you have that capability on the descendant Account. MSP provider relationships add authorization-only edges between account trees without changing the physical parent hierarchy.
 
@@ -128,12 +125,11 @@ flowchart LR
   Auth --> Explosion
 ```
 
-The original parent traversal made this especially stark: following
+The illustrative per-record parent traversal makes this especially stark: following
 `account.parent` was a cross-network call, not an in-process association or a
 local database query. Repeating that traversal while loading and authorizing a
-large result is an N+1 visible from space. Once the reconstruction implemented
-authorization for all of those record loads, the request reproduced the known
-failure mode: it took minutes and could not respond before timeout.
+large result is an N+1 visible from space. The supported implementation keeps
+that traversal in Account Service and exposes batched retrieval to callers.
 
 The broad advice is simpler than any implementation in the rest of this
 series: treat one-record-at-a-time work inside a collection as a defect until
@@ -142,17 +138,12 @@ service boundary.
 
 ## How to Read the Numbered Parts
 
-The numbered parts follow the order in which the problem was actually solved.
-They are not a claim that CTEs, Redis, or Dataloader are
-the point of the exercise. Each was used to remove or contain one multiplier in
-the same request.
-
-The reconstruction was also developed in that order. Some obvious retrieval
-and hierarchy problems had to be fixed before every service had implemented
-the complete authorization behavior. When that authorization was finished, the
-remaining multipliers combined and the intended failure reproduced exactly.
-That history is slightly messy, but it is more useful than pretending the full
-problem appeared fully formed and was solved from a clean plan.
+The numbered parts follow the dependency between the mechanisms. Recursive SQL
+keeps a hierarchy walk in its owning database. Collection APIs make remote
+retrieval batch shaped. That batching exposes an authorization request that is
+still too broad, so `/can` asks for the specific decision the owner needs.
+Owner-aligned caches and domain APIs preserve the shape, and GraphQL Dataloader
+assembles the application response without returning to record loops.
 
 For each part, keep four questions in view:
 
@@ -430,18 +421,17 @@ screen and GraphQL response, not taking ownership of them.
 
 ## Case Study Spine
 
-This is the historical order in which the multipliers were found and removed,
-not a ranked list of technologies or a recommended universal stack.
+This is the order in which the mechanisms depend on one another, not a ranked
+list of technologies or a recommended universal stack.
 
-1. [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
+1. [Part 1: Recursive SQL](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
 2. [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
 3. [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
-4. [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
+4. [Part 4: Redis Cache, per Service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
 5. [Part 5: Smart APIs](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
 6. [Part 6: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader)
 7. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
 8. [Future Explorations](/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations)
-9. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
 
 
 This case study sits alongside the [Developer Affordances](/articles/series/IAM-System-Demo/iam-system-demo#developer-affordances) notes, where the scaffold, ActiveResource layer, data generation, devcontainer, and Foreman setup explain how the demo became possible to build and inspect.
@@ -458,6 +448,7 @@ This case study sits alongside the [Developer Affordances](/articles/series/IAM-
 - [Foreman for Local Process Orchestration](/articles/series/IAM-System-Demo/foreman-for-local-process-orchestration)
 
 
-## Measured Results and Traces
-
-The [September 2026 benchmark summary](./graphql-auth-explosion-results) includes timings, ranges, failures, and measurement limits. The [trace gallery](./graphql-auth-explosion-traces) pairs small examples with a full interactive waterfall for each trace.
+The current implementation and focused tests establish the request shapes and
+authorization semantics described here. Performance numbers require a fresh
+run against the same implementation; the series therefore limits current
+claims to mechanisms and bounded work.

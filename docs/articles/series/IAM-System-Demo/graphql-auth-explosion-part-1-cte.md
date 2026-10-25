@@ -1,100 +1,149 @@
-# GraphQL Auth Explosion Case Study, Part 1: CTE
+# GraphQL Auth Explosion Case Study, Part 1: Recursive SQL
 
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
 
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: ramblings
+## The Query Needs Facts from Two Owners
 
-## CTE
-
-An Account stores only its immediate `parent_account_id`. To authorize a record owned by a deeply nested account, the system needs the complete direct lineage from that account to its top-level ancestor.
-
-The straightforward application-level implementation repeatedly loads the next parent:
+An Account stores only its immediate `parent_account_id`. Following that pointer through a remote model turns an ordinary-looking loop into one HTTP request and one database query per ancestor:
 
 ```ruby
 accounts = [Account.find(target_account_id)]
-
-while accounts.last.parent_account_id
-  accounts << Account.find(accounts.last.parent_account_id)
-end
+accounts << Account.find(accounts.last.parent_account_id) while accounts.last.parent_account_id
 ```
 
-That loop looks harmless when `Account` looks like a local model. Here it is an ActiveResource model, so every `find` is another request across the network to Account Service. A lineage containing five accounts requires five service calls and five separate database lookups before authorization can use the result.
+For a three-Account lineage, that innocent loop produces a call trace shaped like this:
 
-```mermaid
-sequenceDiagram
-  autonumber
-  participant Caller as Calling Service
-  participant AS as Account Service
-  participant DB as Account Database
+```text
+Account.find(leaf)
+└── GET Account Service /accounts/leaf
+    └── SELECT accounts WHERE id = leaf
 
-  Caller->>AS: GET /accounts/leaf
-  AS->>DB: SELECT leaf
-  AS-->>Caller: leaf, parent_id: child
-  Caller->>AS: GET /accounts/child
-  AS->>DB: SELECT child
-  AS-->>Caller: child, parent_id: root
-  Caller->>AS: GET /accounts/root
-  AS->>DB: SELECT root
-  AS-->>Caller: root, parent_id: null
+Account.find(parent)
+└── GET Account Service /accounts/parent
+    └── SELECT accounts WHERE id = parent
+
+Account.find(root)
+└── GET Account Service /accounts/root
+    └── SELECT accounts WHERE id = root
 ```
 
-A recursive common table expression moves that traversal into the database. This simplified query shows the shape used by the demo:
+That is the minimum shape of the walk: one service request and one Account lookup for every node in the lineage. Policy evaluation beneath each protected read adds more work. A deeper tree therefore creates a longer serial request chain before the caller can use the result.
+
+Account Service can replace that loop with a recursive SQL CTE, but its database does not contain enough information to run the query safely by itself.
+
+- Account Service owns the physical `parent_account_id` links.
+- Organization Service owns the relationship rows that say which Accounts belong to an Organization.
+
+The CTE needs both. The parent links tell it where to walk; the Organization membership IDs tell it which parent IDs the walk may admit. On a hierarchy cache miss, Account Service therefore obtains the Organization membership scope before it runs the CTE.
+
+After discarding requested IDs that do not exist locally, Account Service enters an `IAM_SYSTEM` context and sends the remaining roots to Organization Service:
+
+```http
+POST /organization_account_ids/for_account_ids
+Content-Type: application/json
+
+{
+  "account_ids": ["account-a", "account-b"]
+}
+```
+
+Organization Service looks up the owning Organization for each requested Account and returns two correlated pieces of data: the complete membership-ID set for each relevant Organization, and a mapping from each requested root to its Organization.
+
+```json
+{
+  "organizations": {
+    "organization-1": ["account-a", "parent-a", "root-a"],
+    "organization-2": ["account-b", "parent-b"]
+  },
+  "account_to_organization": {
+    "account-a": "organization-1",
+    "account-b": "organization-2"
+  }
+}
+```
+
+Those IDs are membership facts, not a hierarchy result. Organization Service neither follows `parent_account_id` nor orders the Accounts into lineages. The shared Organization Account client combines the two response maps so that Account Service receives, for each requested root, its Organization and that Organization's Account IDs.
+
+Account Service then constructs one row in the CTE's `roots` relation for each requested Account:
+
+```text
+root_id   | organization_id | seed_ids
+----------+-----------------+----------------------------------
+account-a | organization-1  | {account-a,parent-a,root-a}
+account-b | organization-2  | {account-b,parent-b}
+```
+
+The implementation calls the membership array `seed_ids`. It is not a set of traversal roots. Each `root_id` is the traversal root; its `seed_ids` are the Organization-owned boundary for that root.
+
+The implementation is split across the [Account Service cache-miss and CTE path](https://github.com/meleneth/iam-system-demo/blob/d61eeae7bf0dcefd9e8630d54c38cd37170ae9ec/account-service/app/controllers/accounts_controller.rb#L97-L224), the [shared Organization Account client](https://github.com/meleneth/iam-system-demo/blob/d61eeae7bf0dcefd9e8630d54c38cd37170ae9ec/gems/organization-account-resource/lib/organization_account_resource.rb#L26-L40), and the [Organization Service membership lookup](https://github.com/meleneth/iam-system-demo/blob/d61eeae7bf0dcefd9e8630d54c38cd37170ae9ec/organization-service/app/controllers/organization_accounts_controller.rb#L29-L129).
+
+## Then Traverse the Physical Hierarchy
+
+Only after it has those correlated inputs can Account Service run the recursive query. The anchor is each requested Account. Every recursive step follows the current `parent_account_id`, but admits the parent only when its ID appears in that root's Organization membership set.
 
 ```sql
-WITH RECURSIVE account_ancestry(id, parent_account_id, name, level) AS (
-  SELECT id, parent_account_id, name, 0
-  FROM accounts
-  WHERE id = :target_account_id
+WITH RECURSIVE roots(root_id, organization_id, seed_ids) AS (
+  VALUES (:root_id, :organization_id, :organization_account_ids)
+),
+account_ancestry(root_id, organization_id, id, parent_account_id, level, path) AS (
+  SELECT roots.root_id,
+         roots.organization_id,
+         accounts.id,
+         accounts.parent_account_id,
+         0,
+         ARRAY[accounts.id]::uuid[]
+  FROM roots
+  INNER JOIN accounts ON accounts.id = roots.root_id
 
   UNION ALL
 
-  SELECT parent.id,
+  SELECT lineage.root_id,
+         lineage.organization_id,
+         parent.id,
          parent.parent_account_id,
-         parent.name,
-         child.level + 1
-  FROM accounts parent
-  INNER JOIN account_ancestry child
-    ON parent.id = child.parent_account_id
-  WHERE parent.id = ANY(:organization_account_ids)
+         lineage.level + 1,
+         lineage.path || parent.id
+  FROM account_ancestry lineage
+  INNER JOIN roots ON roots.root_id = lineage.root_id
+  INNER JOIN accounts parent ON parent.id = lineage.parent_account_id
+  WHERE parent.id = ANY(roots.seed_ids)
+    AND NOT parent.id = ANY(lineage.path)
+    AND lineage.level + 1 < 100
 )
-
-SELECT id, parent_account_id, name, level
+SELECT root_id, id, parent_account_id, level
 FROM account_ancestry
-ORDER BY level DESC;
+ORDER BY root_id, level DESC;
 ```
 
-The first `SELECT` is the anchor. It starts with the account whose lineage was requested and labels it level zero.
+The response contains each target and its direct ancestors, ordered from the topmost returned ancestor down to the target—not children, siblings, or every Account in the Organization. Because the endpoint accepts several roots, the query preserves `root_id`, `organization_id`, and `seed_ids` together. A root cannot borrow another root's Organization boundary.
 
-The second `SELECT` is the recursive step. It joins the current row's `parent_account_id` to the parent account's `id`, adds that parent to the result, and repeats. Recursion stops when the current account has no parent.
+The complete cache-miss path is:
 
-The `organization_account_ids` condition is a boundary check. Organization Service owns the fact that an account belongs to an organization. Account Service uses that known account-ID set to prevent a malformed or cross-organization parent reference from carrying the traversal outside the target organization.
-
-Finally, `ORDER BY level DESC` returns the lineage from the top-level account down to the target:
-
-```mermaid
-flowchart LR
-  Root[Root account<br/>level 2]
-  Child[Child account<br/>level 1]
-  Leaf[Target account<br/>level 0]
-
-  Root --> Child --> Leaf
+```text
+POST Account Service /accounts_with_parents       roots A, B
+├── SELECT existing Account IDs                    A, B
+├── POST Organization Service
+│   /organization_account_ids/for_account_ids    IAM_SYSTEM
+│   └── Organization membership sets
+│       + root-to-Organization mapping
+├── bind roots rows                              A + Org 1 + Org 1 IDs
+│                                                    B + Org 2 + Org 2 IDs
+├── execute one recursive CTE
+└── return hierarchy for A and B in request order
 ```
 
-The caller now makes one request for the hierarchy, and Account Service resolves the direct lineage with one recursive database query. The response contains the target and its ancestors—not the target's children, its sibling branches, or every account in the organization.
+This is not global ancestry discovery followed by an Organization filter. Organization scope is an input to the traversal. Referencing the `accounts` table in the join is how PostgreSQL follows a known parent edge; `parent.id = ANY(roots.seed_ids)` constrains every recursive edge as it is traversed.
 
-That returned hierarchy remains physical and client-local. MSP provider Accounts
-are added only to Authorization Service's internal scope graph; they are never
-inserted into the client hierarchy response. Account Service also authorizes
-the requested and returned Account records before disclosing them to a real
-actor. The narrow Authorization Service fact lookup uses an explicit internal
-context instead.
+The returned hierarchy is physical and client-local. MSP provider Accounts are authorization-only virtual ancestors evaluated inside Authorization Service. They are never inserted into the actor-facing Account hierarchy.
 
-The production implementation accepts multiple target accounts, constructs bound UUID inputs, integrates organization scoping, and groups each returned lineage back under its requested account ID. Those mechanics support the later batching work, but the recursion is the same anchor-and-parent step shown above.
+## Cached Facts Do Not Grant Access
 
-[View the fixed-revision `compute_accounts_with_parents` implementation](https://github.com/meleneth/iam-system-demo/blob/42f2ec4/account-service/app/controllers/accounts_controller.rb)
+Account Service caches owner-derived hierarchy payloads under `account_with_parents:<account_id>`. A cache hit can avoid both the Organization membership call and the CTE. It does not confer permission.
 
-## Measured Evidence
+For a real actor, `GET /account_with_parents/:account_id` and the batched endpoint require `account.read` on the requested target and on every Account record returned, even when the hierarchy came from Redis. A child-only grant therefore cannot disclose unreadable ancestors. Authorization Service's hierarchy lookup is different: it uses `IAM_SYSTEM` to obtain restricted relationship facts needed to decide the original actor's permission.
 
-Compare the [measured hierarchy results](./graphql-auth-explosion-results#hierarchy-traversal-and-smart-apis) with the [depth-5 parent traversal and CTE traces](./graphql-auth-explosion-traces#follow-parents-or-ask-for-the-hierarchy).
+The recursive CTE is an intentional part of the architecture. It replaces parent-by-parent network traversal while preserving the owning services' separate facts and the actor-facing authorization boundary.
+
+Next: [Multiple Object Retrieval](./graphql-auth-explosion-part-2-multiple-object-retrieval)

@@ -4,71 +4,63 @@ Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam
 
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: draft; retrieval-mode benchmark collected September 17, 2026.
+## Turn Record Loops into Collection Requests
 
-The [measured retrieval results](./graphql-auth-explosion-results#retrieval-and-authorization) now compare serial and batched modes with the same fixture, authorization mode, and cache state.
-
-| Deep fixture, capabilities mode, Redis disabled | Median seconds [minimum–maximum] | Outcome |
-| --- | ---: | --- |
-| Serial retrieval | 23.673 [21.907–25.449] | 3/3 succeeded |
-| Batched retrieval | 2.076 [2.050–2.366] | 3/3 succeeded |
-
-The ratio of medians is 11.4×. Wide serial retrieval hit the 180-second client deadline in all three runs; wide batched retrieval returned three empty HTTP replies. Neither provides a completed wide-fixture latency comparison. These retrieval traces are too large for the hosted gallery; the [eight-target hierarchy pair](./graphql-auth-explosion-traces#eight-hierarchy-calls-or-one-batch) illustrates batching at a different boundary.
-
-## Multiple Object Retrieval
-
-When fetching a large number of objects from a remote service, one at a time is a latency death sentence. We can provide an array of IDs and reduce request latency overall. The current resource clients use configurable chunks: `IAM_DEMO_BATCH_SIZE` defaults to 1,000 and accepts values from 1 through 10,000. OpenTelemetry traces keep each resulting HTTP request and owning-service query visible.
-
-### One Object Per Request
+The problematic path starts one record at a time. A remote model makes this easy to miss: `find` looks like local Ruby even when it performs an HTTP request, triggers policy evaluation, walks a hierarchy, and queries another database.
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  participant UM as User Management
-  participant AS as Account Service
-  participant DB as Account Database
+  participant UI as User Management
+  participant Account as Account Service
+  participant DB as Account database
 
-  Note over UM,AS: Once for every account ID
-  loop
-    UM->>AS: GET /accounts/:id
-    AS->>DB: SELECT one account
-    DB-->>AS: one account
-    AS-->>UM: one account
+  loop once per Account ID
+    UI->>Account: GET /accounts/:id
+    Account->>DB: SELECT one Account
+    DB-->>Account: one row
+    Account-->>UI: one Account
   end
-
-  Note over UM,AS: N objects become<br/>N network round trips
 ```
 
-### Multiple Primary Keys in One Request
+The remedy begins at the transport boundary. The current clients expose searches that carry several primary keys or join keys in one request:
+
+```http
+POST /accounts/search
+{"id":["account-a","account-b"]}
+
+POST /users/search
+{"account_id":["account-a","account-b"]}
+
+POST /group_users/search
+{"user_id":["user-a","user-b"]}
+```
+
+The owning service performs a set-oriented query and authorizes the returned collection. The clients split larger inputs into `IAM_DEMO_BATCH_SIZE` chunks; the configured default is 1,000 and accepted values range from 1 through 10,000.
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  participant UM as User Management
-  participant AS as Account Service
-  participant DB as Account Database
+  participant UI as User Management
+  participant User as User Service
+  participant DB as User database
 
-  UM->>AS: POST /accounts/search<br/>{ id: [id1, id2, id3] }
-  AS->>DB: SELECT accounts WHERE id IN (...)
-  DB-->>AS: account collection
-  AS-->>UM: [account1, account2, account3, ...]
-
-  Note over UM,AS: Explicit primary keys cross the service boundary<br/>as one collection
+  UI->>User: POST /users/search<br/>account_id: [A, B, C]
+  User->>DB: SELECT users WHERE account_id IN (...)
+  DB-->>User: User collection
+  User-->>UI: authorized User collection
 ```
 
-### Multiple Records Through Multiple Join Keys
+## Batch Shape Has to Survive the Whole Call Path
 
-```mermaid
-sequenceDiagram
-  autonumber
-  participant UM as User Management
-  participant US as User Service
-  participant DB as User Database
+A collection endpoint is only useful if the layers underneath it retain the same shape. The resource client must not loop over IDs. The controller must not turn a set query back into `find` calls. The policy layer must derive distinct targets from the collection and authorize them in batches. Related lookups must accept their own collection keys.
 
-  UM->>US: POST /users/search<br/>{ account_id: [account1, account2] }
-  US->>DB: SELECT users WHERE account_id IN (...)
-  DB-->>US: users joined by account_id
-  US-->>UM: [user1, user2, user3, ...]
+The clients also have to reconstruct the result the caller asked for. `Account.with_parents_batch_ordered`, for example, deduplicates the request sent over the wire and then restores the original root order. Missing or ambiguous hierarchy results become empty entries instead of shifting another Account's lineage into the wrong position. Dataloader sources similarly regroup flat User or membership responses under the key that requested them.
 
-  Note over UM,US: The caller supplies multiple account_id join keys,<br/>not a free-form search
-```
+This work reduces remote request and materialization cardinality. It does not, by itself, establish a latency improvement; that requires a current measurement. More importantly, it does not solve authorization merely because fewer HTTP calls exist.
+
+## The Next Multiplier Becomes Visible
+
+Once retrieval crosses the boundary as a collection, the policy layer can see a large set of Account scopes at once. Fetching a complete capability list for every one of those scopes is still an oversized question when the owning service needs only one permission.
+
+Retrieval did not “lose its batch shape.” It began per record, then became batch shaped. That improvement exposed the next problem: authorization also had to preserve the batch while asking a narrower question.
+
+Next: [Multiple Object Authorization](./graphql-auth-explosion-part-3-multiple-object-authorization)

@@ -1,7 +1,5 @@
 # How I Scaffolded an Entire Distributed Platform in 10 Minutes
 
-> Status: Draft
-
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
@@ -221,12 +219,11 @@ Mobilis::DSL.generate("parent_account_id") do
 end
 ```
 
-This is intentionally the **initial** scaffold, not the current data model.
-The generated `capabilities.subject_id` table predates the authorization model
-described in the case study. Active `capability_grants` now belong to Groups,
-users receive them through Group memberships, and the later Group Service is a
-first-class owner of Groups and membership rows. The old table remains only as
-historical scaffold residue; current authorization does not read it.
+The code block demonstrates the scaffold input, not the IAM model used by the
+case study. In the current system, `capability_grants` belong to Groups, users
+receive them through explicit Group memberships, and Group Service owns Groups
+and membership rows. Authorization Service evaluates those grants; the
+generated `capabilities.subject_id` table is not part of that path.
 
 
 ## Related

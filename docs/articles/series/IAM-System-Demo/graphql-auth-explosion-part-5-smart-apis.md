@@ -4,62 +4,66 @@ Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam
 
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: ramblings
+## Put Domain Work Behind Domain APIs
 
-## Smart APIs
+A useful service API accepts the question the caller actually has. It does not force the caller to reconstruct an owner-controlled relationship one record at a time.
 
-The account hierarchy is a tree, but each row only knows its immediate parent through `parent_account_id`. For a deeply nested account, the useful authorization question is often: which ancestors do I need to check before I can answer `can?`?
+The hierarchy endpoints are the simplest example:
 
-```mermaid
-flowchart LR
-  classDef account fill:#0f172a,stroke:#64748b,color:#e2e8f0
-  classDef selected fill:#7c2d12,stroke:#fb923c,color:#fff7ed,stroke-width:3px
-  classDef ancestor fill:#064e3b,stroke:#34d399,color:#ecfdf5,stroke-width:2px
-  classDef sibling fill:#1e293b,stroke:#475569,color:#cbd5e1
+```http
+GET /account_with_parents/:account_id
 
-  RootA["Account #8f4a<br/>parent_account_id: null"]
-  RootB["Account #21c9<br/>parent_account_id: null"]
-
-  ChildA1["Account #0d12<br/>parent_account_id: 8f4a"]
-  ChildA2["Account #6f12<br/>parent_account_id: 8f4a"]
-  ChildB1["Account #c73b<br/>parent_account_id: 21c9"]
-
-  LeafA1["Account #4b91<br/>parent_account_id: 0d12"]
-  LeafA2["Account #de80<br/>parent_account_id: 6f12"]
-  LeafA3["Account #f9ac<br/>parent_account_id: 6f12"]
-  LeafB1["Account #31e7<br/>parent_account_id: c73b"]
-
-  RootA ~~~ ChildA1
-  RootA ~~~ ChildA2
-  RootB ~~~ ChildB1
-  ChildA1 ~~~ LeafA1
-  ChildA2 ~~~ LeafA2
-  ChildA2 ~~~ LeafA3
-  ChildB1 ~~~ LeafB1
-
-  ChildA1 -. "parent_account_id = 8f4a" .-> RootA
-  ChildA2 -. "parent_account_id = 8f4a" .-> RootA
-  ChildB1 -. "parent_account_id = 21c9" .-> RootB
-  LeafA1 -. "parent_account_id = 0d12" .-> ChildA1
-  LeafA2 -. "parent_account_id = 6f12" .-> ChildA2
-  LeafA3 -. "parent_account_id = 6f12" .-> ChildA2
-  LeafB1 -. "parent_account_id = c73b" .-> ChildB1
-
-  class RootA,ChildA2 ancestor
-  class LeafA3 selected
-  class RootB,ChildA1,ChildB1,LeafA1,LeafA2,LeafB1 sibling
+POST /accounts_with_parents
+{"account_ids":["account-a","account-b"]}
 ```
 
-It is very common in this system to need to get the list of parent accounts for a given account because of the way Authorization works.
+Account Service can combine its physical parent links with Organization membership scope, use its recursive CTE, cache owner-derived lineages, and return results correlated to the requested roots. The caller does not need to know how those facts are stored.
 
-In the uncached case, Account Service asks Organization Service for the Account IDs belonging to the target's Organization. Organization Service caches that membership list in its own Redis instance. Account Service feeds those IDs into the recursive CTE, returns only the target's direct physical ancestors, and caches that hierarchy in its own Redis instance.
+The same principle appears in filtered search endpoints and grouped count endpoints. `POST /users/search` accepts several Account join keys. `POST /groups/search` accepts several IDs. Count endpoints return grouped scalar results, but they still take explicit authorization targets because a number cannot reveal which records it summarizes.
 
-This API deliberately does not return an MSP provider Account as another
-parent. Organization Service owns explicit provider/client relationships, and
-Authorization Service uses them to build a separate virtual scope graph while
-evaluating Group grants. Keeping the public hierarchy physical prevents an
-authorization relationship from masquerading as a data-model parent link.
+## MSP Pages Are an Owning-Service Query
 
-## Measured Evidence
+The GraphQL `mspUserManagement` field starts with this call path:
 
-The [hierarchy and batch results](./graphql-auth-explosion-results#hierarchy-traversal-and-smart-apis) measure avoided requests. Inspect the [eight individual hierarchy GETs and one batch POST](./graphql-auth-explosion-traces#eight-hierarchy-calls-or-one-batch) as complete interactive traces.
+```text
+mspUserManagement
+  → MspManagedOrganization.page
+  → GET /msp_managed_organizations/:msp_account_id
+```
+
+Although the Rails controller lives under an `Internal` module, that route is actor-facing. `MspManagedOrganization.page` forwards the real actor. The separate `/internal/msp_managed_organizations/:msp_account_id` route is the `IAM_SYSTEM`-only form.
+
+For an actor-facing page, Organization Service:
+
+1. validates that the provider Account belongs to the provider Organization in the managed relationship;
+2. requires `account.read` on that provider Account;
+3. counts the full distinct managed relationship in SQL;
+4. selects a stable Account-ID page in SQL, ordered by Account ID;
+5. requires `account.read` on every Account disclosed on that page; and
+6. returns the page, total relationship count, and next continuation offset.
+
+The service materializes and authorizes only the requested page. Its configured maximum is `IAM_DEMO_BATCH_SIZE`: 1,000 by default, with accepted configuration values from 1 through 10,000. One unreadable page Account rejects the entire page; rows are not silently filtered. Off-page Accounts are not submitted for Account authorization.
+
+The `total_count` is relationship metadata disclosed after the provider relationship and provider `account.read` checks. It counts all managed Accounts, not the actor-readable subset. It does not require materializing or authorizing the whole managed set, and it does not introduce a special MSP permission.
+
+```mermaid
+sequenceDiagram
+  participant GQL as User Management GraphQL
+  participant Org as Organization Service
+  participant DB as Organization database
+  participant Auth as Authorization Service
+
+  GQL->>Org: GET /msp_managed_organizations/provider<br/>real actor + continuation
+  Org->>DB: validate provider relationship
+  Org->>Auth: /can/Account/account.read<br/>provider Account
+  Auth-->>Org: allow
+  Org->>DB: COUNT managed relation
+  Org->>DB: ORDER BY account_id OFFSET ... LIMIT ...
+  Org->>Auth: /can/Account/account.read<br/>only page Account IDs
+  Auth-->>Org: allow every page target
+  Org-->>GQL: page IDs, total_count, continuance
+```
+
+Smart APIs do not erase service boundaries. They give the owner enough information to do set-oriented work, preserve correlations, and enforce the policy attached to the data being disclosed.
+
+Next: [GraphQL and Dataloader](./graphql-auth-explosion-part-6-graphql-and-dataloader)

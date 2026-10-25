@@ -1,19 +1,18 @@
-# ActiveResource and the Default Implementation that Astounded Me
+# ActiveResource Makes the Network Look Local
 
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)
 
 Section: Developer Affordances
 
-> Status: Draft
-ActiveResource is a library that got removed from Ruby on Rails.
+ActiveResource gives remote REST records a Rails-model-shaped API. That is convenient, but it can hide the most important property of an operation: a `find` or association traversal may be an HTTP request with downstream SQL and authorization work.
 
-It's supposed to let you access a remote object somewhat like you would a local model.
+The IAM demo keeps that convenience while making collection APIs and authorization context explicit.
 
-Out of the box, the rails Rest model can be 'a bit awkward' for using these things - for values of it's very easy to transfer the entire table and do local filtering, which 'doesn't scale' as the kids say.
+## Filter at the Owning Service
 
-So we made `lib/mel/filterable.rb`:
+Owning models declare which filters their collection endpoint accepts:
 
-```ruby [lib/mel/filterable.rb]
+```ruby
 module Mel
   module Filterable
     extend ActiveSupport::Concern
@@ -32,95 +31,41 @@ module Mel
 end
 ```
 
-This lets you declare filterable fields in your database model
+`OrganizationAccount` permits `account_id` and `organization_id`. Its controller rejects an unfiltered collection read, applies the filter in Organization Service's database, materializes the rows, and lets the model policy authorize every returned relationship.
 
-```ruby [app/models/organization_account.rb]
-# frozen_string_literal: true
+```ruby
+def index
+  filters = params.slice(*OrganizationAccount.allowed_filters).permit!
+  raise BadFilterError unless filters.present?
 
-# app/models/organization_accounts.rb
-
-class OrganizationAccount < ApplicationRecord
-  include Mel::Filterable
-  filterable_fields :account_id, :organization_id
-
-  belongs_to :organization, class_name: "Organization", optional: false
-  validates :account_id, presence: true
+  results = OrganizationAccount.where(filters).to_a
+  render json: results
 end
 ```
 
-and add a bit to the controller (authorization calls omitted):
+Filtering at the owner avoids transferring an entire table for local selection. It is not authorization proof: each `OrganizationAccount` row still requires `organization.read.accounts` on its Organization or `account.read` on its Account.
 
-```ruby [app/controllers/organization_accounts_controller.rb]
-class OrganizationAccountsController < ApplicationController
-  before_action :require_filters, only: [:index]
+## Prefer Explicit Search Bodies for Large Collections
 
-  def require_filters
-    if params.slice(*OrganizationAccount.allowed_filters).blank?
-      render json: { error: "Filter required" }, status: 400
-    end
-  end
-
-  # GET /organization_accounts
-  def index
-    filters = params.slice(*OrganizationAccount.allowed_filters).permit!
-    raise BadFilterError unless filters.present?
-
-    results = OrganizationAccount.where(filters)
-    render json: results
-  end
-end
-```
-
-This lets you (in a remote service) do this:
-
-```ruby
-org_accounts = OrganizationAccount.find(
-  :all,
-  params: { organization_id: org_account.organization_id }
-)
-```
-
-without bringing the whole table local and filtering it the hard way.
-
-What might not be immediately visible here is that the filters support arrays - you can ask for multiple objects at the same time, and they will be returned in 1 HTTP call that corresponds to 1 SQL query, and retrieve multiple objects.
-
-```ruby
-accounts_to_load = [
-  '43ef7000-f81d-4402-a513-263bc6016be0',
-  '194f08f2-3763-4a54-b07f-0d378cbb3d4d'
-]
-
-accounts = Account.find(:all, params: { id: accounts_to_load })
-```
-
-As the system grew, the collection-heavy paths moved to explicit JSON search
-endpoints rather than long array query strings. The shared remote contract now
-wraps that custom POST in an authorization-aware operation:
+Array filters can carry several IDs in one call, but long query strings are a poor interface for large batches. Collection-heavy paths use JSON search endpoints:
 
 ```ruby
 class User < AuthorizedResource::Base
   def self.search(params)
     authorized_read("search") do
-      raw = connection.post(
+      response = connection.post(
         "/users/search",
         params.to_json,
         headers.merge("Content-Type" => "application/json")
       )
-      ActiveSupport::JSON.decode(raw.body).map { |attributes| new(attributes) }
+      format.decode(response.body).map { |attributes| new(attributes) }
     end
   end
 end
 ```
 
-The caller enters `AuthorizationContext.as_requesting_user` once. The resource
-builds a fresh `pad-user-id` header for the request, while User Service owns the
-`account.users.read` decision for the returned records. The remote model does
-not make its own duplicate `/can` call.
+The caller enters `AuthorizationContext.as_requesting_user` once. `AuthorizedResource::Base` adds a fresh `pad-user-id` header and transports the response; User Service owns the `account.users.read` policy for the returned Users. The client does not make a second `/can` call or treat the response as authority for later requests.
 
-The original service-local ActiveResource classes have since become small
-shared resource gems. [Explicit Authorization Contexts at the Model
-Boundary](./dev-affordances-explicit-authorization-boundaries) explains the
-transport/enforcement split, and [Extracting Cross-Service Models into Shared
-Gems](./dev-affordances-cross-service-resource-gems) covers that packaging
-refactor.
+This is the balance the demo needs: familiar model syntax at call sites, explicit collection-shaped APIs for expensive paths, and no ambiguity about which side of the HTTP boundary owns policy.
 
+Related: [Explicit Authorization Contexts at the Model Boundary](./dev-affordances-explicit-authorization-boundaries) and [Cross-Service Resource Gems](./dev-affordances-cross-service-resource-gems)

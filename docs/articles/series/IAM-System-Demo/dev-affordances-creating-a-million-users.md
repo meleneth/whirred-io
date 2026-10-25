@@ -3,8 +3,6 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-> Status: draft
-
 We did not build an async user creation pipeline because product needed it. We built it to see if our distributed retrieval model could take a beating.
 
 When you want to load **hundreds of thousands of users spread across organizations and account hierarchies**, you need a way to generate them first. That meant async bulk creation: not for production signup, but for stress testing.
@@ -17,7 +15,7 @@ The whole point of this project was to test:
 - **Hierarchical lookups** with parent accounts
 - **Authorization behavior** under load
 
-To make those tests meaningful, we needed a lot of users. A million at a time was a good start.
+To make those tests meaningful, we needed a lot of users. The generator was designed to enqueue million-record synthetic batches.
 
 Synchronous creation would never cut it, so we leaned on async:
 
@@ -64,24 +62,23 @@ Because these were synthetic workloads, we could turn the dials however we wante
 
 Once the pieces were in place, we hammered the system:
 
-- Bulk-created users by the million.
+- Submitted large synthetic User batches.
 - Distributed them across deep organization and account hierarchies.
 - Ran retrieval queries to see how the system held up.
 
 The point was not to keep the users. It was to watch the retrieval pipeline under load and prove the design was sound enough to keep exploring.
 
-The run produced the large fixture needed to expose retrieval behavior. It did
-not record a publication-quality creation-duration, worker-count, failure-rate,
-or peak-memory result, so it should not be read as proof of a one-million-user
-throughput limit. The measured articles use named subsets and fixtures with
-their own request outcomes instead.
+The generator produced data large enough to expose retrieval behavior. It did
+not record a publication-quality completed-row count, creation duration,
+worker count, failure rate, or peak-memory result. “One million” describes the
+requested synthetic batch, not a measured throughput or scaling limit.
 
 ## Outro
 
 The async user creation project was not a feature. It was a synthetic data
 factory that made large retrieval and authorization experiments possible. The
-later benchmarks and correctness suites—not the fact that the records could be
-created—supply the evidence about those request paths.
+fact that records could be created does not establish the performance or
+correctness of the request paths that later read them.
 
 LocalStack failed this local workload; Goaws completed it with much lower
 observed overhead. Rails workers inside Docker made the concurrency easy to

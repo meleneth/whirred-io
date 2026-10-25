@@ -3,13 +3,11 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
 
-> Status: draft
-
 ## Architecture Is Throughput
 
 This case study started with an existing distributed system: users, accounts, organizations, groups, authorization, and a User Management surface tying them together.
 
-The system was good enough for its normal workload: one user operating inside one account context. Organization-wide User Management asked a different question. It had to load every user from every account in an organization and authorize records across all of those account contexts. The request took minutes or timed out.
+An ordinary request concerns one actor and one Account context. Organization-wide and MSP User Management ask a different question: assemble records across many Account contexts and enforce each owner's policy throughout the result.
 
 Making that query complete exposed the work it multiplied:
 
@@ -18,22 +16,22 @@ Making that query complete exposed the work it multiplied:
 - authorization repeated across every account represented in the result
 - nested GraphQL fields capable of recreating those loops
 
-Traces, logs, request timings, query counts, and awkward code paths each show pieces of the problem. Reading them together reveals the request shape: object retrieval multiplies across network boundaries, and every downstream layer has another opportunity to multiply it again.
+Call paths, query shapes, request counts, and focused tests each show pieces of the problem. Reading them together reveals the request shape: object retrieval multiplies across network boundaries, and every downstream layer has another opportunity to multiply it again.
 
 The job was to make that query work on the system we had. Solving it required changing how work crossed the existing boundaries, rather than pretending those boundaries were free.
 
 The general rule is to be wildly allergic to N+1 behavior. Treat collection code that performs one-record-at-a-time work as a defect until its cost is proven bounded. Apply even more suspicion when a local-looking accessor hides a network request.
 
-## What Changed
+## How the Work Stays Bounded
 
-The fixes removed or contained one multiplier at a time:
+The current architecture removes or contains each multiplier:
 
 - batch remote retrieval instead of looping over ids
-- authorize the complete account collection with one set-oriented permission check instead of calculating capabilities per account
+- authorize collections with narrow, set-oriented permission questions instead of calculating full capabilities per Account
 - resolve Group-owned grants through explicit memberships instead of attaching grants directly to Users
 - push hierarchy work into database queries where it belongs
 - cache at service boundaries that match ownership
-- apply bounded concurrency after the request shape is batched
+- page MSP relationships in the owning database and authorize only the selected page
 
 Performance work and design work converged on the same question: how much work does one request create at each boundary?
 
@@ -52,6 +50,4 @@ Every technical solution eventually reaches a dataset it cannot serve within the
 This series follows the technical request as far as the architecture can reasonably carry it. The final boundary belongs to product design.
 
 
-## Measured Results and Traces
-
-The [September 2026 benchmark summary](./graphql-auth-explosion-results) includes timings, ranges, failures, and measurement limits. The [trace gallery](./graphql-auth-explosion-traces) pairs small examples with a full interactive waterfall for each trace.
+The implementation and focused tests support the mechanisms and authorization contracts described in the series. They do not provide current latency, throughput, or scaling-limit evidence. Those claims require a fresh benchmark against this exact implementation and its current policy semantics.

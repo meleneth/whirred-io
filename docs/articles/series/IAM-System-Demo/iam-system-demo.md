@@ -1,8 +1,8 @@
 # GraphQL Auth Explosion Case Study
 
-> Status: Draft
+IAM System Demo is the distributed Rails system behind this case study: separate service ownership, ActiveResource remote models, physical Account hierarchy, Group-owned capability grants, GraphQL composition, explicit authorization boundaries, batching, and owner-aligned caches.
 
-IAM System Demo is the concrete distributed Rails system behind this case study: the scaffold, service boundaries, ActiveResource remote models, account hierarchy, Group-owned capability grants, GraphQL access patterns, authorization checks, caching, async retrieval, and the failure modes that show up when all of those pieces start talking to each other.
+[Building, Breaking, and Refactoring a Distributed Rails IAM System](./iam-system-demo-from-scaffold-to-scale) is the short entry essay. The numbered series below develops the complete argument.
 
 ## Developer Affordances
 
@@ -20,17 +20,11 @@ These are related to the IAM demo, but they are not numbered parts of the auth-e
 ## Case Study Spine
 
 1. [Case Study Overview](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
-2. [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
+2. [Part 1: Recursive SQL](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
 3. [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
 4. [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
-5. [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
-6. [Part 5: Smart API's](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
+5. [Part 4: Redis Cache, per Service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
+6. [Part 5: Smart APIs](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
 7. [Part 6: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader)
 8. [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
 9. [Future Explorations](/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations)
-10. [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
-
-
-## Measured Results and Traces
-
-The [September 2026 benchmark summary](./graphql-auth-explosion-results) includes timings, ranges, failures, and measurement limits. The [trace gallery](./graphql-auth-explosion-traces) pairs small examples with a full interactive waterfall for each trace.

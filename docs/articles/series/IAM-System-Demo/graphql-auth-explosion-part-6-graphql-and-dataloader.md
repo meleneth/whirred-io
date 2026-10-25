@@ -8,7 +8,7 @@ Overview: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/g
 
 Everything up to this point can be implemented through REST APIs. Those APIs now accept collections: multiple Account IDs, multiple User `account_id` join keys, and multiple GroupUser `user_id` join keys.
 
-GraphQL puts a convenient object graph over those service boundaries. That is useful, but it creates exactly the abstraction that made the original problem dangerous: field resolvers make remote records look local again. Dataloader is the mechanism that preserves the collection-shaped REST calls underneath that object graph.
+GraphQL puts a convenient object graph over those service boundaries. That is useful, but it recreates the abstraction that makes this problem dangerous: field resolvers make remote records look local again. Dataloader is the mechanism that preserves the collection-shaped REST calls underneath that object graph.
 
 It does not do that automatically. A Dataloader source receives a collection of keys; its implementation must actually make a collection-shaped downstream request. A source that loops over its keys is still an N+1.
 
@@ -186,17 +186,25 @@ flowchart LR
   Memberships --> Regroup
 ```
 
-That requires two batched stages, not one Group request. Showing both stages keeps the remaining request cardinality visible: traces should contain the GroupUser request followed by the Group request.
+That requires two batched stages, not one Group request. Showing both stages keeps the remaining request cardinality visible: instrumentation should show the GroupUser request followed by the Group request.
+
+## MSP Pagination Bounds Each GraphQL Step
+
+The `mspUserManagement` resolver does not discover the full managed set and slice it in User Management. It asks `MspManagedOrganization.page` for one actor-authorized page from Organization Service. The response contains sorted Account IDs, the complete managed-relationship count, and a continuation offset.
+
+Only those page IDs proceed into the Dataloader sources for Account, User, membership, and Group hydration. Organization Service has already required `account.read` on every disclosed page Account. Downstream services still enforce their own policies for the records they return; page authorization is not a transferable proof bag.
+
+The GraphQL field does not expose a public `pageSize` argument. Organization Service applies `IAM_DEMO_BATCH_SIZE` as its default and maximum for the internal `limit` parameter; that setting defaults to 1,000 and accepts values from 1 through 10,000. A client continues the walk with the returned cursor.
 
 ## Dataloader Preserves the Work Done Earlier
 
 The Dataloader layer is effective only because the lower layers already expose collection-shaped operations. It can collect Account IDs, but Account Service must accept multiple IDs. It can collect account join keys, but User Service must accept multiple `account_id` values. It can collect User IDs, but Group Service must accept multiple `user_id` values.
 
-The implementation must also preserve actor identity, authorization semantics, ordering, empty results, chunk boundaries, and trace context through every source. The current regression suite covers mixed GraphQL actors and nested data, the selected gallery responses pass exact identity checks, and the traces retain the actor-scoped service calls. Those checks establish the described request shape; they do not turn Dataloader itself into an authorization boundary:
+The implementation must also preserve actor identity, authorization semantics, ordering, empty results, chunk boundaries, and trace context through every source. The focused GraphQL tests cover actor forwarding, pagination state, ordering, and nested data. Those checks establish the described request shape; they do not turn Dataloader itself into an authorization boundary:
 
 > Dataloader creates an opportunity to batch. Only the source implementation decides whether that opportunity survives the next network boundary.
 
 
-## Measured Evidence
+The structural result is bounded, collection-shaped transport beneath a nested GraphQL response. Current code and focused tests support that mechanism. Throughput, milliseconds, and the best batch size require measurements collected from the same implementation and authorization semantics.
 
-The [MSP scale results](./graphql-auth-explosion-results#graphql-msp-scale) report complete paginated walks, and the [batch-boundary comparison](./graphql-auth-explosion-results#batch-boundaries) compares sizes 200, 1000, and 10000. [Explore the selected GraphQL traces](./graphql-auth-explosion-traces#graphql-preserves-the-service-boundaries), including one warm MSP page; a page trace is not the full walk.
+Next: [Architecture Is Throughput](./graphql-auth-explosion-conclusion)

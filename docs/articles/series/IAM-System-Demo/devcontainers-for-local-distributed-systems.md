@@ -3,8 +3,6 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-> Status: skeleton
-
 ## Why this belongs here
 
 The IAM demo is a distributed system, even when it runs on one machine. That means the local development environment has to make multiple services, ports, databases, caches, queues, and documentation surfaces feel boring enough to work with.
@@ -24,5 +22,4 @@ The devcontainer is not the core auth problem. It is an affordance: it reduces t
 When the interesting failure is hidden in request fan-out, cache boundaries, and service ownership, local setup friction is not harmless. Every broken port, missing dependency, or different host configuration steals attention from the actual architecture.
 
 A good devcontainer does not solve the distributed system. It makes the system available for inspection.
-
 

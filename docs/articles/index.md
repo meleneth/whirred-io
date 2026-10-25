@@ -7,14 +7,13 @@ The main spine: what went wrong in a distributed IAM-style system, why authoriza
 - [Start Here: From Scaffold to Scale](/articles/series/IAM-System-Demo/iam-system-demo-from-scaffold-to-scale)
 - [Series Home](/articles/series/IAM-System-Demo/iam-system-demo)
 - [Overview](/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study)
-- [Part 1: CTE](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
+- [Part 1: Recursive SQL](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte)
 - [Part 2: Multiple Object Retrieval](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval)
 - [Part 3: Multiple Object Authorization](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization)
 - [Part 4: Redis Cache, per service](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service)
 - [Part 5: Smart APIs](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis)
 - [Part 6: GraphQL and Dataloader](/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader)
 - [Conclusion: Architecture Is Throughput](/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion)
-- [Project Timeline](/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline)
 
 ## Developer Affordances
 

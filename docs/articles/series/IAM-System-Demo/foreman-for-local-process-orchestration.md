@@ -3,8 +3,6 @@
 Series: [GraphQL Auth Explosion Case Study](/articles/series/IAM-System-Demo/iam-system-demo)  
 Section: Developer Affordances
 
-> Status: skeleton
-
 ## Why this belongs here
 
 Once the environment exists, the next problem is orchestration. A distributed Rails demo can be technically local while still needing several long-running processes: web services, workers, queues, caches, telemetry, and docs.

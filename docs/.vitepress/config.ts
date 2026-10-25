@@ -34,17 +34,14 @@ const config = defineConfig({
                             { text: 'Start Here', link: '/articles/series/IAM-System-Demo/iam-system-demo-from-scaffold-to-scale' },
                             { text: 'Series Home', link: '/articles/series/IAM-System-Demo/iam-system-demo' },
                             { text: 'Overview', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-case-study' },
-                            { text: 'Part 1: CTE', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte' },
+                            { text: 'Part 1: Recursive SQL', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-1-cte' },
                             { text: 'Part 2: Multiple Object Retrieval', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-2-multiple-object-retrieval' },
                             { text: 'Part 3: Multiple Object Authorization', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-3-multiple-object-authorization' },
                             { text: 'Part 4: Redis Cache', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-4-redis-cache-per-service' },
                             { text: 'Part 5: Smart APIs', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-5-smart-apis' },
                             { text: 'Part 6: GraphQL and Dataloader', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-part-6-graphql-and-dataloader' },
                             { text: 'Conclusion', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-conclusion' },
-                            { text: 'Measured Results', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-results' },
-                            { text: 'Trace Gallery', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-traces' },
-                            { text: 'Future Explorations', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations' },
-                            { text: 'Project Timeline', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-project-timeline' }
+                            { text: 'Future Explorations', link: '/articles/series/IAM-System-Demo/graphql-auth-explosion-future-explorations' }
                         ]
                     },
                     {
