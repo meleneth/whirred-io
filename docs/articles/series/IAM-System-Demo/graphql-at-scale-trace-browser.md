@@ -15,4 +15,6 @@ import TraceBrowser from '../../../.vitepress/theme/components/TraceBrowser.vue'
 
 Choose either October 25 trace, expand or collapse its call tree, and select a span to inspect tags and executed SQL. Search includes tag values. The service filter keeps matching spans and their ancestors visible. The two requests and their byte-identical responses are described in the evidence appendix.
 
+Each selected trace includes an **Open this trace in Jaeger** link to the live Jaeger UI on port `11290`.
+
 <TraceBrowser />

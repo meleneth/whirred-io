@@ -75,7 +75,7 @@ onBeforeUnmount(() => { controller?.abort(); window.removeEventListener('popstat
     <label v-if="!embedded" class="trace-picker">Example
       <select :value="active" @change="load($event.target.value)"><option v-for="item in catalog" :key="item.id" :value="item.id">{{ item.title }}</option></select>
     </label>
-    <p v-if="entry"><a :href="withBase(entry.file)" download>Download complete Jaeger JSON</a> · {{ (entry.bytes / 1000).toFixed(1) }} kB</p>
+    <p v-if="entry"><a :href="entry.jaeger" target="_blank" rel="noopener">Open this trace in Jaeger</a> · <a :href="withBase(entry.file)" download>Download complete Jaeger JSON</a> · {{ (entry.bytes / 1000).toFixed(1) }} kB</p>
     <p v-if="loading" role="status">Loading trace…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load(active)">Retry</button></p>
     <template v-if="model">

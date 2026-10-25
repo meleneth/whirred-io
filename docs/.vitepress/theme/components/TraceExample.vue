@@ -19,6 +19,8 @@ const browser = computed(() => `./graphql-at-scale-trace-browser?trace=${encodeU
       </a>
     </div>
     <p class="trace-example__links">
+      <a :href="entry.jaeger" target="_blank" rel="noopener">Open in Jaeger</a>
+      <span aria-hidden="true">·</span>
       <a :href="browser">Explore all {{ entry.spans }} spans</a>
       <span aria-hidden="true">·</span>
       <a :href="preview">Full-size SVG</a>
