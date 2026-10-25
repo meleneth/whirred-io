@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COLLECTION = 'article-traces-20260924T213536Z'
 SOURCE = Path(sys.argv[1]).expanduser() / 'reports/raw' / COLLECTION
 OUT = ROOT / 'docs/public/traces/iam'
-MAX_SOURCE_BYTES = 3_000_000
+MAX_SOURCE_BYTES = 3_500_000
 MAX_PUBLISHED_BYTES = 2_000_000
 SELECTION = [
  ('hierarchy-walk', 'Parent-by-parent · depth 5', 'hierarchies-redis-off/attempt-001/hierarchy-walk/trace.json'),

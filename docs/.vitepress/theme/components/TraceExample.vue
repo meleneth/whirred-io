@@ -6,7 +6,7 @@ import catalog from '../data/iam-traces.json'
 const props = defineProps({ id: { type: String, required: true }, description: { type: String, required: true } })
 const entry = computed(() => catalog.find(trace => trace.id === props.id))
 const preview = computed(() => withBase(`/traces/iam/${props.id}.svg`))
-const browser = computed(() => `./graphql-auth-explosion-trace-browser?trace=${encodeURIComponent(props.id)}`)
+const browser = computed(() => `./graphql-at-scale-trace-browser?trace=${encodeURIComponent(props.id)}`)
 </script>
 
 <template>

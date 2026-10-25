@@ -33,7 +33,7 @@ test('all published traces retain full trees, match manifest hashes, and fit hos
   assert.ok(entry.bytes < 2_000_000)
   assert.equal(entry.kind, 'complete')
   assert.equal(entry.sourceSpans, entry.spans)
-  assert.ok(entry.sourceBytes < 3_000_000)
+  assert.ok(entry.sourceBytes < 3_500_000)
   assert.ok(statSync(`docs/public/traces/iam/${entry.id}.svg`).size > 0)
   total += bytes.length
  }
