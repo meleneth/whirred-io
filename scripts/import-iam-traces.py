@@ -46,7 +46,7 @@ for selection in SELECTION:
  start = min(s['startTime'] for s in spans)
  end = max(s['startTime'] + s['duration'] for s in spans)
  manifest.append(dict(id=slug, title=title, file=f'/traces/iam/{slug}.json', bytes=len(encoded),
-  spans=len(spans), duration=end-start, traceID=trace['traceID'], jaeger=entry['jaeger_url'],
+  spans=len(spans), duration=end-start, traceID=trace['traceID'],
   source=f'{COLLECTION}/{source}', kind='complete', rootSpanID=entry['parent_id'], sourceSpans=source_span_count,
   sourceRequestOutcome=entry.get('request_outcome', 'ok'), expectedFailure=entry.get('expected_failure', False),
   sourceRevision=COLLECTION_METADATA['revision'], sourceWorkingTreeDirty=bool((SOURCE / 'working-tree.patch').read_text().strip()),

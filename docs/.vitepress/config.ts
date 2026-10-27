@@ -28,6 +28,12 @@ const config = defineConfig({
                 items: [
                     { text: 'All Articles', link: '/articles/' },
                     {
+                        text: 'Migration Demos',
+                        items: [
+                            { text: 'Python to Go: Strangler Fig Demo', link: '/articles/strangler-fig-demo' }
+                        ]
+                    },
+                    {
                         text: 'GraphQL Auth Explosion Case Study',
                         collapsed: false,
                         items: [

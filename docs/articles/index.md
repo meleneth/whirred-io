@@ -1,5 +1,9 @@
 # Articles
 
+## Migration Demos
+
+- [Replacing a Python Service with Go, One Request at a Time](/articles/strangler-fig-demo)
+
 ## GraphQL Auth Explosion Case Study
 
 The main spine: what went wrong in a distributed IAM-style system, why authorization checks multiplied, and how the implementation changed under real load.
