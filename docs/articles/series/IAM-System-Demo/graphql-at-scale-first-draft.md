@@ -4,6 +4,10 @@ import TraceExample from '../../../.vitepress/theme/components/TraceExample.vue'
 
 # GraphQL at Scale
 
+![Before: 2.240786 seconds and 1,008 spans. After: 0.367791 seconds and 106 spans. Bars show proportional client durations.](/images/graphql-at-scale-before-after.svg)
+
+*One controlled request. The faster path combines changes to retrieval, authorization, and cache configuration; the chart does not isolate their individual effects.*
+
 GraphQL was the visible edge of this performance problem, but it was not its cause. The expensive part lived underneath: remote object retrieval, hierarchy traversal, and authorization work repeated once per record. The query language made it easy to ask for a connected result. Whether that query was practical depended on the shape of the computation used to assemble it.
 
 The system in this case study is a distributed identity and access management application. Separate Rails services own users, accounts, organizations, groups and memberships, and capability grants. A User Management service composes those REST resources into application-facing GraphQL responses. The test data includes individual customers, enterprises with account trees, and managed service providers (MSPs) linked to thousands of client organizations.

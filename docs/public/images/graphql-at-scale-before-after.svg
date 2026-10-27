@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-labelledby="title description">
+  <title id="title">GraphQL user-management request: before and after</title>
+  <desc id="description">Before: 2.240786 seconds and 1,008 spans. After: 0.367791 seconds and 106 spans. The bars are proportional to the measured client durations.</desc>
+  <rect width="920" height="300" rx="16" fill="#101827"/>
+  <rect x="1" y="1" width="918" height="298" rx="15" fill="none" stroke="#334155" stroke-width="2"/>
+
+  <g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="40" y="45" fill="#f8fafc" font-size="24" font-weight="700">One request, two execution paths</text>
+    <text x="40" y="72" fill="#94a3b8" font-size="16">Client elapsed time · identical response</text>
+
+    <text x="40" y="127" fill="#f8fafc" font-size="19" font-weight="700" letter-spacing="1">BEFORE</text>
+    <rect x="210" y="98" width="560" height="42" rx="7" fill="#f97316"/>
+    <text x="884" y="127" fill="#f8fafc" font-size="20" font-weight="700" text-anchor="end">2.240786 s</text>
+    <text x="210" y="166" fill="#cbd5e1" font-size="18">1,008 spans</text>
+
+    <text x="40" y="231" fill="#f8fafc" font-size="19" font-weight="700" letter-spacing="1">AFTER</text>
+    <rect x="210" y="202" width="91.9155" height="42" rx="7" fill="#22c55e"/>
+    <text x="884" y="231" fill="#f8fafc" font-size="20" font-weight="700" text-anchor="end">0.367791 s</text>
+    <text x="210" y="270" fill="#cbd5e1" font-size="18">106 spans</text>
+  </g>
+</svg>
