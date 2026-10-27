@@ -5,22 +5,14 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTION = 'article-traces-20260924T213536Z'
+COLLECTION = 'msp10-all-users-single-scope-capabilities-vs-can-20261025'
 SOURCE = Path(sys.argv[1]).expanduser() / 'reports/raw' / COLLECTION
 OUT = ROOT / 'docs/public/traces/iam'
 MAX_SOURCE_BYTES = 3_500_000
 MAX_PUBLISHED_BYTES = 2_000_000
 SELECTION = [
- ('hierarchy-walk', 'Parent-by-parent · depth 5', 'hierarchies-redis-off/attempt-001/hierarchy-walk/trace.json'),
- ('hierarchy-cte', 'One hierarchy GET · depth 5', 'hierarchies-redis-off/attempt-001/hierarchy-cte/trace.json'),
- ('hierarchy-individual', 'Eight individual hierarchy GETs', 'hierarchies-redis-off/attempt-001/hierarchy-individual/trace.json'),
- ('hierarchy-batch', 'One batch POST · eight targets', 'hierarchies-redis-off/attempt-001/hierarchy-batch/trace.json'),
- ('organization-cold', 'Organization · cold Redis', 'cache-wide-can/attempt-001/organization-cold/trace.json'),
- ('organization-warm', 'Organization · warm Redis', 'cache-wide-can/attempt-001/organization-warm/trace.json'),
- ('authorization-collection-can', 'Wide organization · /can, Redis off', 'auth-wide-can/attempt-001/authorization-collection-can/trace.json'),
- ('graphql-cold', 'Deep GraphQL · cold Redis', 'graphql-cache-b1000/attempt-001/graphql-cold/trace.json'),
- ('graphql-warm', 'Deep GraphQL · warm Redis', 'graphql-cache-b1000/attempt-001/graphql-warm/trace.json'),
- ('graphql-msp', 'MSP GraphQL · warm page, batch 200', 'graphql-cache-b200/attempt-001/graphql-msp/trace.json'),
+ ('msp10-all-users-slow', 'MSP all users · serial retrieval and full capabilities', 'msp10-all-users-slow/attempt-001/msp10-all-users-slow/trace.json'),
+ ('msp10-all-users-fast-cold', 'MSP all users · batched retrieval and targeted authorization', 'msp10-all-users-fast-cold/attempt-001/msp10-all-users-fast-cold/trace.json'),
 ]
 INDEX = {entry['id']: entry for entry in json.loads((SOURCE / 'trace-index.json').read_text())}
 COLLECTION_METADATA = json.loads((SOURCE / 'collection.json').read_text())
@@ -54,8 +46,8 @@ for selection in SELECTION:
  start = min(s['startTime'] for s in spans)
  end = max(s['startTime'] + s['duration'] for s in spans)
  manifest.append(dict(id=slug, title=title, file=f'/traces/iam/{slug}.json', bytes=len(encoded),
-  spans=len(spans), duration=end-start, traceID=trace['traceID'], source=f'{COLLECTION}/{source}',
-  kind='complete', rootSpanID=None, sourceSpans=source_span_count,
+  spans=len(spans), duration=end-start, traceID=trace['traceID'], jaeger=entry['jaeger_url'],
+  source=f'{COLLECTION}/{source}', kind='complete', rootSpanID=entry['parent_id'], sourceSpans=source_span_count,
   sourceRequestOutcome=entry.get('request_outcome', 'ok'), expectedFailure=entry.get('expected_failure', False),
   sourceRevision=COLLECTION_METADATA['revision'], sourceWorkingTreeDirty=bool((SOURCE / 'working-tree.patch').read_text().strip()),
   railsProcessesStable=True, warmupSamples=len(warmups), activeRecordQueryCache=True, solidCache=False,

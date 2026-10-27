@@ -4,6 +4,6 @@ I used heavy LLM assistance and generation in creating this site, while maintain
 
 ## Latest article
 
-[GraphQL at scale](/articles/series/IAM-System-Demo/graphql_at_scale)
+[GraphQL at Scale](/articles/series/IAM-System-Demo/graphql-at-scale-first-draft)
 
 <!--@include: ./articles/series/IAM-System-Demo/iam-system-demo-from-scaffold-to-scale.md-->

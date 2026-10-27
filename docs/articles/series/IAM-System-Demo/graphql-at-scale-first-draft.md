@@ -91,15 +91,39 @@ The clearest authorization comparison uses the 251-account `wide_org` fixture co
 
 The full-capabilities trace took 12.994 seconds. It contains 18,406 spans, including 2,319 HTTP client spans and 4,596 application SQL spans. The targeted path took 3.356 seconds, with 560 total spans, 88 HTTP client spans, and 137 SQL spans. In the waterfall, the capabilities trace is dominated by 760 hierarchy calls, 760 organization-context calls, and 760 provider-context calls. In the targeted trace those three categories appear 17 times each because the work is performed on chunks and permission-specific sets.
 
-The most recent trace pair, collected October 25, exercises an end-to-end GraphQL document as one MSP administrator. It retrieves ten users and their groups from ten managed accounts and also asks for those ten account hierarchies. The two responses are byte-identical and pass independent identity, parent, membership, total, and cursor checks.
+The most recent corrected trace pair, collected October 25, exercises the user-management request the screen actually needs. The request identifies only the MSP account and actor. It does not smuggle in a prepared list of users or managed accounts, ask for unrelated hierarchy fields, or choose the result size:
 
-The deliberately bad profile—full capabilities plus ten serial `Account.find` calls—took 1.367 seconds and produced 1,728 spans, 251 HTTP client spans, and 408 SQL spans. The optimized profile used the batch hierarchy API and targeted authorization. With all four scoped Redis databases flushed immediately before measurement, it took 0.321 seconds and produced 232 spans, 37 HTTP client spans, and 35 SQL spans. At the User Management boundary, the serial trace shows ten non-overlapping account GETs; the optimized trace shows one POST for all ten accounts. This comparison intentionally changes authorization mode, hierarchy retrieval, and cache configuration together. It demonstrates the combined architecture, not the isolated contribution of any one change.
+```graphql
+query MspUsers($mspAccountId: ID!, $actor: ID!) {
+  mspUserManagement(mspAccountId: $mspAccountId, as: $actor) {
+    loading
+    loadedCount
+    totalCount
+    continuance
+    accounts {
+      id
+      users {
+        id
+        email
+        accountId
+        groups { id name }
+      }
+    }
+  }
+}
+```
 
-<TraceExample id="msp10-parent-serial-capabilities" description="The complete 1,728-span GraphQL trace. At the User Management boundary, find the ten sequential Account GETs; below them, repeated capability, hierarchy, membership, and provider-context work fills the waterfall." />
+The service discovers the managed accounts and loads their users. In the deterministic `small_msp_10` fixture, that means all ten client accounts and their ten users; the eleventh fixture user is the MSP administrator making the request. The two measured requests and responses are byte-identical. Independent checks match the exact account IDs, user IDs, account scopes, group memberships, totals, and cursor.
 
-<TraceExample id="msp10-parent-api-can-cold" description="The byte-identical response through the batch hierarchy API and targeted authorization, measured after the scoped Redis flush. Find the single ten-account POST and the set-width permission checks." />
+The deliberately slow profile used truly serial retrieval and single-scope full-capability authorization with Redis disabled. It took 2.241 seconds and produced 1,008 spans: 387 receiving-service API spans and 575 application SQL spans. The optimized profile used batched retrieval and targeted authorization after all four scoped Redis databases were flushed. It took 0.368 seconds and produced 106 spans: 35 receiving-service API spans, 35 SQL spans, and 26 Redis pipeline spans. That is 6.09 times faster with 89.5% fewer spans in this single controlled sample. This comparison intentionally changes retrieval, authorization, and cache configuration together. It demonstrates the combined architecture, not the isolated contribution of any one change.
 
-Cache state is not a footnote. In the optimized trace, “cold” means Redis DB 1 was flushed for account, authorization, group, and organization caches. Rails and PostgreSQL stayed warm, two workload warmups ran before the flush, and Active Record's request query cache remained enabled. The request still executed 29 Redis pipelines containing 202 commands as misses were read and results written. A warm result proves cache reuse, not uncached speed: for the wide organization workload, a separate pair measured 1.313 seconds cold and 0.975 seconds warm.
+<TraceExample id="msp10-all-users-slow" description="The complete 1,008-span request for every user managed by this MSP. Truly serial retrieval and repeated single-scope capability, hierarchy, membership, and provider-context work dominate the waterfall." />
+
+<TraceExample id="msp10-all-users-fast-cold" description="The byte-identical 106-span response through batched retrieval and targeted, set-shaped authorization, measured after the scoped Redis flush." />
+
+These exports deliberately omit outbound HTTP client spans, generic authorization wrappers, and GraphQL lifecycle spans. Trace-context propagation still attaches each receiving-service API span to the caller's active request, DataLoader batch, or retained authorization boundary. The smaller trace is therefore evidence about the recorded application work under the same reduced instrumentation, not a count of every runtime event.
+
+Cache state is not a footnote. In the optimized trace, “cold” means Redis DB 1 was flushed for account, authorization, group, and organization caches. Rails and PostgreSQL stayed warm, two workload warmups ran before the flush, and Active Record's request query cache remained enabled. The request still executed 26 Redis pipelines containing 161 commands as misses were read and results written. A warm result proves cache reuse, not uncached speed: for the wide organization workload, a separate pair measured 1.313 seconds cold and 0.975 seconds warm.
 
 The large MSP fixtures provide scale context without proving production scalability. A warm GraphQL trace over the 9,999-client fixture returned one page of 200 managed accounts and 200 users in 0.237 seconds; it did not return all 9,999 clients. The repeated September matrix did complete full pagination walks: for 9,999 managed accounts, medians were 5.42 seconds cold and 2.93 seconds warm at batch size 10,000. The 99,999-account observations were 63.44 and 37.40 seconds, but some associated large traces were incomplete because Jaeger's receiver rejected oversized exports. Those are controlled response measurements on a seeded stack, not concurrency, throughput, or production-traffic evidence.
 
