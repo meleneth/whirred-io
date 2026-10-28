@@ -67,7 +67,8 @@ const config = defineConfig({
                         text: 'Engineering Essays',
                         collapsed: false,
                         items: [
-                            { text: 'Finer Points of Exception Handling', link: '/articles/finer-points-exception-handling' }
+                            { text: 'Finer Points of Exception Handling', link: '/articles/finer-points-exception-handling' },
+                            { text: "The Database Doesn't Have to Look Like the Data", link: '/articles/syracuse-database-doesnt-have-to-look-like-data' }
                         ]
                     }
                 ]

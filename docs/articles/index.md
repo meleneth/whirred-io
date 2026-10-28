@@ -36,3 +36,4 @@ Supporting notes about the tooling and implementation affordances that made the 
 Standalone engineering arguments that do not depend on the IAM case study.
 
 - [Finer Points of Exception Handling](/articles/finer-points-exception-handling)
+- [The Database Doesn't Have to Look Like the Data](/articles/syracuse-database-doesnt-have-to-look-like-data)
