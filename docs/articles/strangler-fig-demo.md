@@ -28,9 +28,50 @@ The gateway removes caller-supplied `X-Mobilis-Shadow` and mirror-target headers
 
 The Go handler parses and validates an item, then constructs an insert effect from the accepted values. It uses that same effect for the database operation and for telemetry. The shadow marker changes only the final commitment step: a mirrored request records its intended insert and skips the database call; an authoritative request commits and records the applied effect. There is no separate shadow implementation of the business rule in [the Go handler](https://github.com/meleneth/strangler-fig-demo/blob/main/candidate/internal/app/routes.go).
 
-That distinction matters for writes. Sending two ordinary writes to a shared database would create duplicate effects, while comparing only the two HTTP responses would miss that error. Here the verifier checks a fresh insert against three kinds of evidence: the response, the Postgres row and audit record, and the traced semantic effect. At full mirroring, it also compares the candidate's shadow intent to the authoritative effect and confirms that the shadow made no item database call.
+That distinction matters for writes. Sending two ordinary writes to a shared database would create duplicate effects, while comparing only the two HTTP responses would miss that error. The verifier checks a fresh insert against the response, the SQL and its bindings, the Postgres row and audit record, and the traced semantic effect. At full mirroring, it also compares the candidate's shadow intent to the authoritative effect and confirms that the shadow made no item database call.
 
 The services share a deliberately narrow contract: valid `POST /items` requests contain exactly an integer `id` and a constrained string `name`; invalid requests return `400`, and duplicate IDs or names return `409` on authoritative writes. A shadow request does not check uniqueness, because Python may have committed the same insert by the time its mirror arrives. The demo therefore makes no claim that shadow conflict responses are equivalent.
+
+## Different SQL, the same meaning
+
+The frameworks make the difference visible. SQLAlchemy builds the Python query from `select(Item).order_by(Item.id)`; Go passes a literal query to pgx. These are the PostgreSQL statements produced by the current implementations for the item read:
+
+**Python / SQLAlchemy**
+
+```sql
+SELECT items.id, items.name
+FROM items ORDER BY items.id
+```
+
+**Go / pgx**
+
+```sql
+SELECT id, name FROM items ORDER BY id
+```
+
+The Python statement qualifies each column with `items`; Go does not. Both select the same two columns from the same table in ID order. The insert shows a more consequential difference. In one mirrored write from the live demo, SQLAlchemy's PostgreSQL driver statement and bindings were:
+
+```sql
+INSERT INTO items (id, name) VALUES (%(id)s::INTEGER, %(name)s::VARCHAR)
+```
+
+```json
+{"id":300755834,"name":"demo_0ac61aed673b4386884057b507d15665"}
+```
+
+Go's [insert plan](https://github.com/meleneth/strangler-fig-demo/blob/90db170bb4b686060838e9d6ecc8e008204af72c/candidate/internal/app/items.go) produced the same write intent for the mirrored request, using positional arguments:
+
+```sql
+INSERT INTO items (id, name) VALUES ($1, $2)
+```
+
+```json
+[300755834,"demo_0ac61aed673b4386884057b507d15665"]
+```
+
+The proof is in the bindings, not a string comparison. The [Python adapter](https://github.com/meleneth/strangler-fig-demo/blob/90db170bb4b686060838e9d6ecc8e008204af72c/legacy/src/service_legacy/items.py) records the actual driver statement and parameters after execution. Go records the exact statement and arguments passed to pgx; this shadow write recorded the same insert plan with `executed = false` and made no database call. In a later candidate-authoritative write, Go executed `INSERT INTO items (id, name) VALUES ($1, $2)` with bindings `[1070957264,"demo_d946d302e39f4131b20e6a1c1cf40bbb"]`. The [SQL comparator](https://github.com/meleneth/strangler-fig-demo/blob/90db170bb4b686060838e9d6ecc8e008204af72c/legacy/demo/sql_meaning.py) parses PostgreSQL SQL, substitutes bindings, and normalizes the harmless qualification, placeholder, and cast differences. It checks that both reads mean “return `id` and `name` ordered by `id`” and both inserts express the same item values for the mirrored request.
+
+The [live verifier](https://github.com/meleneth/strangler-fig-demo/blob/90db170bb4b686060838e9d6ecc8e008204af72c/legacy/demo/operations.py) also checks the independently instrumented database span against the recorded SQL meaning, the ordered read result against Postgres, and exactly one audited insert by the authoritative service. It rejects missing or extra application queries, changed projections, filters, ordering, limits, target tables, or bindings. The [regression tests](https://github.com/meleneth/strangler-fig-demo/blob/90db170bb4b686060838e9d6ecc8e008204af72c/legacy/demo/test_operations.py) deliberately introduce those drifts. This is a bounded check for one item contract, not a general proof that two arbitrary SQL programs are equivalent.
 
 ## Move authority in measured steps
 
@@ -49,7 +90,7 @@ The outage checks are useful too. At `100/0`, the verifier stops the Go candidat
 
 ## What the evidence can and cannot say
 
-The [verifier](https://github.com/meleneth/strangler-fig-demo/blob/main/legacy/demo/operations.py) gives each request a trace ID, retrieves its spans from Jaeger, and checks that gateway, backend, item query, and effect spans have the expected ancestry. It independently reads Postgres and its write audit. It also tests malformed inputs, duplicate writes, and attempts to spoof the shadow header. A passing `./verify` means these particular read, write, routing, and trace contracts held for the local workload.
+The [current verifier](https://github.com/meleneth/strangler-fig-demo/blob/90db170bb4b686060838e9d6ecc8e008204af72c/legacy/demo/operations.py) gives each request a trace ID, retrieves its spans from Jaeger, and checks that gateway, backend, SQL, and effect spans have the expected ancestry. It independently reads Postgres and its write audit. It also tests malformed inputs, duplicate writes, and attempts to spoof the shadow header. A passing `./verify` means these particular read, write, SQL, routing, and trace contracts held for the local workload.
 
 It does not prove equivalence for arbitrary application behavior. The demo has one table, deterministic insert intent, no updates or deletes, no external side effects, and no concurrent migration controller. Shadow mode does not model database constraints or contention. Telemetry includes item values, which would need careful handling for sensitive data. The point of the exercise is the discipline: transfer authority only after the candidate's observed behavior and effects are good enough for the workload being moved.
 
