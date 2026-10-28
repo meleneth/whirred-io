@@ -49,22 +49,40 @@ fields.each do |field|
 end
 ```
 
-For example, a record in the [format read by the importer](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L25-L47) could be:
+For example, two separate records in the [format read by the importer](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L25-L47) could be:
 
 ```json
 {"serial":"INV-42","t":1404000120,"dc_voltage":310.0,"ac_power":4200.0}
 ```
 
-becomes two measurement definitions for `INV-42` and two observations. Suppose those definitions receive IDs `7` and `8`:
+```json
+{"serial":"INV-42","t":1404000180,"dc_voltage":312.0}
+```
+
+Suppose the importer creates device `42` and measurement definitions `7` and `8`. The `devices` row identifies the inverter:
+
+| `devices.id` | `devices.name` |
+| ---: | --- |
+| 42 | `INV-42` |
+
+The `device_columns` rows map measurement names to that device:
+
+| `device_columns.id` | `device_id` | `name` |
+| ---: | ---: | --- |
+| 7 | 42 | `dc_voltage` |
+| 8 | 42 | `ac_power` |
+
+The [weekly child table `device_data_2014_25`](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/db/schema.rb#L2062-L2067) then has **exactly three observation rows** from those two records:
 
 | `event_time` | `device_column_id` | `data` |
 | ---: | ---: | ---: |
-| 1404000120 | 7 (`dc_voltage`) | 310.0 |
-| 1404000120 | 8 (`ac_power`) | 4200.0 |
+| 1404000120 | 7 | 310.0 |
+| 1404000120 | 8 | 4200.0 |
+| 1404000180 | 7 | 312.0 |
 
-Each stored value carries a `device_column_id` that says which measurement it is. That identity is resolved before insertion; the meaning of `310.0` does not depend on its position in the JSON record or the `INSERT` statement. This representation does not prevent every ingestion mistake, but it removes the positional correspondence the old system relied on.
+`device_id` belongs to the mapping row, not the observation row. Each stored value carries a `device_column_id` that identifies both its measurement and, through that mapping, its device. That identity is resolved before insertion; the meaning of `310.0` does not depend on where `dc_voltage` appeared among the incoming measurements or on a device-specific physical column position. This representation does not prevent every ingestion mistake, but it removes the measurement-to-column positional correspondence the old system relied on.
 
-If a record does not contain `ac_power`, the importer writes no `ac_power` observation for that timestamp. The partitioned history stores the reported values, not rows padded with `NULL`s for measurements the device did not send. If a later record introduces `heatsink_temp`, Syracuse creates another definition and observation, not a new physical column.
+The second record has no `ac_power`, so the child table has no fourth row for it. The partitioned history stores the reported values, not rows padded with `NULL`s for measurements the device did not send. If a later record introduces `heatsink_temp`, Syracuse creates another definition and observation, not a new physical column.
 
 ## Get the original shape back
 
@@ -110,7 +128,7 @@ SELECT * FROM crosstab(
 
 The inner query reads narrow observations through the `device_data` parent table. The second argument maps the category IDs to result positions. **PostgreSQL's `crosstab()` performs the pivot.** Ruby builds the SQL and receives a wide relation; it does not iterate through observations to assemble a hash per timestamp. The separate [query.rb](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/query.rb#L28-L30) script demonstrates executing that generated query with `Device.connection.query(query)`.
 
-For two records at different timestamps, with `ac_power` absent from the second, the result would look like this:
+For those two input records, with `ac_power` absent from the second, the result would look like this:
 
 | `date_when` | `dc_voltage` | `ac_power` |
 | ---: | ---: | ---: |
