@@ -2,9 +2,9 @@
 
 ## The schema that pissed me off
 
-Different solar inverters reported different measurements. The production system I was working with represented that variability using separate tables per client, with columns that were often `NULL` because a device did not report that measurement. That design was bad enough to make me build [Syracuse](https://github.com/meleneth/syracuse), a Rails and PostgreSQL project from 2014, around a different representation.
+Different solar inverters reported different measurements. The production system I was working with gave every client a physical database table and tried to fit those varying measurements into fixed columns. Records had large numbers of `NULL` values. Then positional inserts made it worse: when the position of an incoming value did not match the intended database column, a measurement landed under the wrong name. People were manually patching the mismatches instead of fixing the design.
 
-The problem was not that `NULL` exists. It was that the database layout claimed customer identity determined measurement structure. It did not. Device capability did. A new client meant another table; a newly reported measurement meant a schema change somewhere; asking for the same measurement across clients meant negotiating a collection of different tables. The columns also confused “this device did not report a value at this time” with “this device has no such measurement.” Those are different facts.
+That was not just wasted space or an ugly schema. Customer identity determined the physical table, even though device capability determined which measurements existed. A new client meant another table; a new capability meant another column somewhere; querying across clients meant reconciling those tables. The `NULL`s reflected that confusion. The positional writes turned it into a correctness problem: a stored number could look valid while claiming to be a different measurement. Hand corrections made the consequences recurring maintenance work. That was the system that drove me to build [Syracuse](https://github.com/meleneth/syracuse) in 2014.
 
 I wanted the ingest format to remain convenient for devices and the query result to remain convenient for consumers. I did not want either of those interfaces to dictate the physical tables.
 
@@ -37,7 +37,7 @@ end
 
 `devices.name` holds the incoming serial number as a string. A `device_columns` row names one measurement for one device. Each `device_data` row holds one numeric value at one Unix timestamp for one of those definitions. “Column” is the project's name for a measurement definition; it is not a physical column in `device_data`.
 
-The [Redis importer](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L11-L22) pops JSON records from the `device_data` list. For each record it finds or creates a device by `serial`, skips the `serial` and `t` keys, then finds or creates a `DeviceColumn` for each remaining key using `(device_id, name)`. The decisive lines are [the measurement loop](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L35-L47):
+The [Redis importer](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L11-L47) reads JSON records, resolves each measurement name to a definition for that device, and writes its value. The essential part is [the measurement loop](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L42-L49):
 
 ```ruby
 fields.each do |field|
@@ -48,8 +48,6 @@ fields.each do |field|
   @importer.insert(data["t"], column.id, data[field])
 end
 ```
-
-The importer caches devices and definitions in memory so it does not look them up again for every record in that process.
 
 For example, a record in the [format read by the importer](https://github.com/meleneth/syracuse/blob/7a12d87393d8a010a947157180c673012c1ac274/lib/redis_device_data_importer.rb#L25-L47) could be:
 
@@ -64,7 +62,9 @@ becomes two measurement definitions for `INV-42` and two observations. Suppose t
 | 1404000120 | 7 (`dc_voltage`) | 310.0 |
 | 1404000120 | 8 (`ac_power`) | 4200.0 |
 
-If the next record includes `heatsink_temp`, the importer can create another definition and insert another observation. It does not need an `ALTER TABLE` for that new measurement.
+Each stored value carries a `device_column_id` that says which measurement it is. That identity is resolved before insertion; the meaning of `310.0` does not depend on its position in the JSON record or the `INSERT` statement. This representation does not prevent every ingestion mistake, but it removes the positional correspondence the old system relied on.
+
+If a record does not contain `ac_power`, the importer writes no `ac_power` observation for that timestamp. The partitioned history stores the reported values, not rows padded with `NULL`s for measurements the device did not send. If a later record introduces `heatsink_temp`, Syracuse creates another definition and observation, not a new physical column.
 
 ## Get the original shape back
 
@@ -119,7 +119,7 @@ For two records at different timestamps, with `ac_power` absent from the second,
 
 **Device JSON → measurement definitions and narrow observations → PostgreSQL `crosstab()` → device-specific wide result.** The first and last shapes are interfaces. The middle one is storage.
 
-That `NULL` is fine: this timestamp has no `ac_power` observation. It is a query result shaped for a consumer, not a permanently allocated storage column. The same physical observation table can return different columns for a different device.
+That `NULL` is produced by the pivot because this timestamp has no `ac_power` observation. There is no corresponding `NULL` row in the partitioned observation table. The query result is shaped for a consumer without permanently allocating storage columns for every possible measurement. The same physical observation table can return different columns for a different device.
 
 There is a precise limit to the reconstruction: the row key is `event_time`, so all observations for a device with the same timestamp collapse into one result row. Syracuse does not store a separate sample ID or define what to do with duplicate values for the same timestamp and measurement. Also, the time predicates are strict `>` and `<`; observations exactly at either requested boundary are excluded.
 
@@ -147,18 +147,14 @@ This is 2014 code, before PostgreSQL's declarative partitioning. Weekly partitio
 
 ## What I'd keep and what I'd change
 
-I would keep the separation between measurement definitions, observations, and wide query results. I would not preserve every line of this implementation.
+I would keep the representation and change some of the machinery. `gen_query` puts `DeviceColumn#name` into a SQL column declaration without quoting it as an identifier; an unusual or untrusted measurement name can break the query or inject SQL. `DeviceData#insert` also interpolates values directly into SQL. Generated identifiers need proper quoting, and data values need binding.
 
-The most immediate defect is SQL construction. `gen_query` splices `DeviceColumn#name` directly into an output column declaration with no identifier quoting. A measurement name containing a space, punctuation, or SQL syntax can break the query; an untrusted name makes this an injection surface. `DeviceData#insert` interpolates the timestamp, definition ID, and value directly into an `INSERT` statement as well. A current implementation should validate incoming values, quote generated identifiers, and bind data values. Dynamic output columns still require deliberate identifier handling; ordinary value parameters do not solve that part.
+The schema has no uniqueness constraint on `(device_id, name)` or on `(event_time, device_column_id)`. Concurrent discovery could create duplicate definitions; repeated ingestion could create duplicate observations. Explicit measurement identity is a better model, but these missing constraints still leave its integrity dependent on application behavior.
 
-The importer issues one insert per measurement and creates definitions on demand. That keeps the mapping simple but adds a database round trip for every field. Batching observations per record, with an explicit transaction and an idempotency rule, would be a sensible next design step. The code as written supplies no unique constraint on `(device_id, name)`, no primary key or uniqueness constraint on observations, and no foreign keys connecting these tables. Concurrent definition discovery could create duplicates, and repeated imports could create multiple values for the same `(event_time, device_column_id)`. Those are concrete integrity gaps, not claims that duplicates happened in production.
-
-The partition code deserves the same scrutiny. I would use declarative range partitioning for a current PostgreSQL build, create future partitions deliberately, and choose indexes from measured query plans. The checked-in `schema.rb` lists the weekly tables as ordinary tables; it does not encode their `INHERITS` relationship or timestamp `CHECK` constraints. Recreating this database from that schema dump alone would therefore miss behavior the importer and resolver depend on. The repository also does not provision the `tablefunc` extension that supplies `crosstab()`; that prerequisite needs to be explicit in a reproducible setup.
-
-Finally, the available tests check some `DeviceDataTable` naming and containment behavior. They do not exercise the importer or the pivot end to end. One table spec still expects an older exclusive-lower-bound constraint while the implementation emits `>=`, so it would fail as written. I would test the representation round trip with actual PostgreSQL rows, including a missing measurement, duplicate timestamp and category, interval boundaries, and partition edges. Those tests would pin down the semantics that matter to consumers.
+The most revealing framework limitation is in the checked-in `schema.rb`: it lists the weekly children as ordinary tables and loses their PostgreSQL `INHERITS` relationships and timestamp `CHECK` constraints. Loading that file would not recreate the database the code expects. The repository also leaves `tablefunc`, which supplies `crosstab()`, to be installed separately. Per-measurement inserts, uncalled child-index creation, and tests that do not exercise the pivot are further limits of this 2014 implementation; they do not change the storage and query argument.
 
 ## The actual lesson
 
-The device's JSON, the database's rows, and the query's columns serve different purposes. They do not have to look alike. Syracuse stored the measurements that existed, then asked PostgreSQL to return the shape the caller wanted. That choice kept a bad physical schema from becoming the application's interface.
+The device's JSON, the database's rows, and the query's columns serve different purposes. They do not have to look alike. Syracuse stored measurements with explicit identities, then asked PostgreSQL to return the shape the caller wanted. Consumers did not have to inherit the narrow storage model.
 
-**Show me your database tables and I'll tell you your features.** A table per customer tells me the application will keep tripping over customers whenever it tries to understand measurements. I wanted Syracuse's tables to say something else: devices have capabilities, observations have times and values, and the result can be wide when the caller needs it.
+**Show me your database tables and I'll tell you your features.** A table per customer tells me the application will keep tripping over customers whenever it tries to understand measurements. In the old system, that confusion reached the writes: position could determine what a value supposedly meant. Syracuse's tables say something more truthful: devices have measurements, observations have times and values, and a wide result is available when the caller needs it.
